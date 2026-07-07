@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CCS Virtual Office Dashboard</title>
-<link rel="stylesheet" href="assets/style.css?v=3">
+<link rel="stylesheet" href="assets/style.css?v=4">
 </head>
 <body>
 
@@ -39,63 +39,65 @@
 
   <section id="tab-operations" class="tab-panel">
 
-    <section class="card">
-      <h2 class="card-title">📊 Overall Operations (All-Time)</h2>
-      <div class="stat-grid" id="overall-stats">
-        <div class="stat-tile" data-stat="handled">
-          <span class="stat-label">Total Issues Handled</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
+    <div class="two-col-row">
+      <section class="card">
+        <h2 class="card-title">📊 Overall Operations (All-Time)</h2>
+        <div class="stat-grid stat-grid--compact" id="overall-stats">
+          <div class="stat-tile" data-stat="handled">
+            <span class="stat-label">Total Issues Handled</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="resolved">
+            <span class="stat-label">Total Resolved</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="transferred">
+            <span class="stat-label">Total Transferred <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="inprogress">
+            <span class="stat-label">Total In Progress</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
         </div>
-        <div class="stat-tile" data-stat="resolved">
-          <span class="stat-label">Total Resolved</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
-        </div>
-        <div class="stat-tile" data-stat="transferred">
-          <span class="stat-label">Total Transferred <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
-        </div>
-        <div class="stat-tile" data-stat="inprogress">
-          <span class="stat-label">Total In Progress</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="card">
-      <div class="card-title-row">
-        <h2 class="card-title">🗓️ Monthly Operations &amp; Themes</h2>
-        <label class="month-select-wrap">
-          <span>Select Month to Review</span>
-          <select id="month-select"></select>
-        </label>
-      </div>
-      <div class="stat-grid" id="month-stats">
-        <div class="stat-tile" data-stat="handled">
-          <span class="stat-label">Issues Handled This Month</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
+      <section class="card">
+        <div class="card-title-row">
+          <h2 class="card-title">🗓️ Monthly Operations &amp; Themes</h2>
+          <label class="month-select-wrap">
+            <span>Select Month to Review</span>
+            <select id="month-select"></select>
+          </label>
         </div>
-        <div class="stat-tile" data-stat="resolved">
-          <span class="stat-label">Resolved This Month</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
+        <div class="stat-grid stat-grid--compact" id="month-stats">
+          <div class="stat-tile" data-stat="handled">
+            <span class="stat-label">Issues Handled This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="resolved">
+            <span class="stat-label">Resolved This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="transferred">
+            <span class="stat-label">Transferred This Month <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="inprogress">
+            <span class="stat-label">In Progress This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
         </div>
-        <div class="stat-tile" data-stat="transferred">
-          <span class="stat-label">Transferred This Month <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
-        </div>
-        <div class="stat-tile" data-stat="inprogress">
-          <span class="stat-label">In Progress This Month</span>
-          <span class="stat-value">&ndash;</span>
-          <span class="stat-delta"></span>
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <section class="card">
       <h2 class="card-title" id="theme-chart-title">🔍 What Were Clients Inquiring About?</h2>
@@ -109,14 +111,15 @@
         <span id="audit-title">🔎 View &amp; Filter Detailed Audit Log</span>
       </button>
       <div id="audit-body" class="collapsible-body">
+        <h3 class="filter-controls-title">Filter Controls:</h3>
         <div class="filter-panel">
           <div class="filter-group">
             <span class="filter-label">Filter by Concern Status:</span>
-            <div class="chip-row" id="status-chips"></div>
+            <div class="multiselect" id="status-multiselect"></div>
           </div>
           <div class="filter-group">
             <span class="filter-label">Filter by Identified Topic Theme:</span>
-            <div class="chip-row" id="theme-chips"></div>
+            <div class="multiselect" id="theme-multiselect"></div>
           </div>
           <div class="filter-group search-group">
             <input type="search" id="search-input" placeholder="Search within Description or Resolution&hellip;">
@@ -128,13 +131,7 @@
         <div class="table-scroll">
           <table class="data-table" id="audit-table">
             <thead>
-              <tr>
-                <th data-sort="queueNumber">Query Number</th>
-                <th data-sort="theme">Identified Theme</th>
-                <th data-sort="description">Brief Description of Concern or Inquiry</th>
-                <th data-sort="status">Concern Status</th>
-                <th>Resolution</th>
-              </tr>
+              <tr id="audit-thead-row"></tr>
             </thead>
             <tbody id="audit-tbody"></tbody>
           </table>
@@ -173,6 +170,6 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/app.js?v=3"></script>
+<script src="assets/app.js?v=4"></script>
 </body>
 </html>

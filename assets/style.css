@@ -204,6 +204,19 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .card-hint { color: var(--text-muted); font-size: 12px; margin: -8px 0 14px; }
 .empty-state p { color: var(--text-secondary); max-width: 640px; }
 
+/* ---------- two-column card row ---------- */
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.two-col-row .card { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .two-col-row { grid-template-columns: 1fr; }
+  .two-col-row .card:first-child { margin-bottom: 20px; }
+}
+
 /* ---------- stat tiles ---------- */
 .stat-grid {
   display: grid;
@@ -211,6 +224,7 @@ button, input, select { font-family: inherit; font-size: inherit; }
   gap: 14px;
 }
 @media (max-width: 760px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-grid--compact { grid-template-columns: repeat(2, 1fr); }
 .stat-tile {
   background: var(--surface-page);
   border: 1px solid var(--border-hairline);
@@ -325,27 +339,97 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .collapsible-body[hidden] { display: none; }
 
 /* ---------- filters ---------- */
+.filter-controls-title { font-size: 14px; font-weight: 700; margin: 0 0 12px; }
 .filter-panel { display: flex; flex-direction: column; gap: 14px; margin-bottom: 14px; }
 .filter-group { display: flex; flex-direction: column; gap: 8px; }
 .filter-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
-.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
+.search-group { flex-direction: row; align-items: center; flex-wrap: wrap; }
+
+/* ---------- multiselect combobox ---------- */
+.multiselect { position: relative; max-width: 640px; }
+.ms-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 38px;
   border: 1px solid var(--border-hairline);
+  border-radius: 8px;
+  padding: 5px 8px;
   background: var(--surface-page);
-  color: var(--text-secondary);
-  border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 12px;
-  cursor: pointer;
+  cursor: text;
+}
+.ms-control:focus-within { border-color: var(--series-1); }
+.ms-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ms-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  max-width: 180px;
+  background: var(--good);
+  color: #fff;
+  border-radius: 6px;
+  padding: 3px 4px 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
 }
-.chip .dot { width: 8px; height: 8px; border-radius: 50%; }
-.chip.selected { background: var(--text-primary); color: var(--surface-card); border-color: var(--text-primary); }
-.chip .count { color: var(--text-muted); }
-.chip.selected .count { color: inherit; opacity: 0.75; }
-.search-group { flex-direction: row; align-items: center; flex-wrap: wrap; }
+.ms-tag-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-tag-remove {
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0.85;
+}
+.ms-tag-remove:hover { opacity: 1; background: rgba(255,255,255,0.2); }
+.ms-input {
+  flex: 1 1 80px;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-primary);
+  padding: 4px 2px;
+}
+.ms-clear {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+.ms-clear:hover { color: var(--text-primary); }
+.ms-caret { color: var(--text-muted); font-size: 11px; padding: 0 4px; pointer-events: none; }
+.ms-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 30;
+}
+.ms-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.ms-option:hover { background: var(--gridline); }
+.ms-option .opt-count { color: var(--text-muted); font-size: 11.5px; }
+.ms-empty { padding: 10px 12px; font-size: 12.5px; color: var(--text-muted); }
 #search-input {
   flex: 1 1 240px;
   border: 1px solid var(--border-hairline);

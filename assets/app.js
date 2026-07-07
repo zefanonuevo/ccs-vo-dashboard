@@ -329,10 +329,11 @@ function renderThemeChart() {
     bar.addEventListener("click", () => {
       const theme = bar.dataset.themeBar;
       state.activeThemeBar = state.activeThemeBar === theme ? null : theme;
-      state.themeFilter = new Set(state.activeThemeBar ? [state.activeThemeBar] : []);
+      state.themeFilter.clear();
+      if (state.activeThemeBar) state.themeFilter.add(state.activeThemeBar);
       state.page = 1;
       renderThemeChart();
-      renderFilterChips();
+      refreshMultiselects();
       renderAuditTable();
       document.getElementById("audit-body").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -356,51 +357,135 @@ function hideBarTooltip() {
 }
 
 /* =========================================================================
-   RENDER: filter chips (status + theme)
+   MULTISELECT COMBOBOX (generic tag-input + dropdown)
    ========================================================================= */
-function renderFilterChips() {
-  const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
+function createMultiselect(containerId, { getOptions, selectedSet, onChange }) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = `
+    <div class="ms-control">
+      <div class="ms-tags"></div>
+      <input type="text" class="ms-input" autocomplete="off" spellcheck="false">
+      <button type="button" class="ms-clear" title="Clear all" hidden>&times;</button>
+      <span class="ms-caret">▾</span>
+    </div>
+    <div class="ms-dropdown" hidden></div>
+  `;
+  const control = container.querySelector(".ms-control");
+  const tagsWrap = container.querySelector(".ms-tags");
+  const input = container.querySelector(".ms-input");
+  const clearBtn = container.querySelector(".ms-clear");
+  const dropdown = container.querySelector(".ms-dropdown");
 
-  const statusCounts = countBy(monthRows, "status");
-  const statusWrap = document.getElementById("status-chips");
-  statusWrap.innerHTML = STATUS_ORDER.map(s => {
-    const count = statusCounts.get(s) || 0;
-    const selected = state.statusFilter.has(s);
-    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-status="${s}">
-      <span class="dot" style="background:${STATUS_META[s].color}"></span>${s} <span class="count">${count}</span>
-    </button>`;
-  }).join("");
-  statusWrap.querySelectorAll(".chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const s = chip.dataset.status;
-      state.statusFilter.has(s) ? state.statusFilter.delete(s) : state.statusFilter.add(s);
-      state.page = 1;
-      renderFilterChips();
-      renderAuditTable();
-    });
+  function renderTags() {
+    tagsWrap.innerHTML = [...selectedSet].map(value => {
+      const opt = getOptions().find(o => o.value === value);
+      const label = opt ? opt.label : value;
+      return `<span class="ms-tag" title="${escapeAttr(label)}">
+        <span class="ms-tag-label">${escapeHTML(label)}</span>
+        <span class="ms-tag-remove" data-remove="${escapeAttr(value)}">&times;</span>
+      </span>`;
+    }).join("");
+    clearBtn.hidden = selectedSet.size === 0;
+  }
+
+  function renderOptions(filterText) {
+    const q = (filterText || "").trim().toLowerCase();
+    const available = getOptions().filter(o => !selectedSet.has(o.value));
+    const filtered = q ? available.filter(o => o.label.toLowerCase().includes(q)) : available;
+    dropdown.innerHTML = filtered.length
+      ? filtered.map(o => `<div class="ms-option" data-value="${escapeAttr(o.value)}">
+          <span>${escapeHTML(o.label)}</span>${o.count != null ? `<span class="opt-count">${o.count}</span>` : ""}
+        </div>`).join("")
+      : `<div class="ms-empty">No matches</div>`;
+  }
+
+  function openDropdown() { dropdown.hidden = false; renderOptions(input.value); }
+  function closeDropdown() { dropdown.hidden = true; }
+
+  control.addEventListener("click", e => {
+    if (e.target.closest(".ms-tag-remove") || e.target.closest(".ms-clear")) return;
+    input.focus();
+    openDropdown();
+  });
+  input.addEventListener("focus", openDropdown);
+  input.addEventListener("input", () => renderOptions(input.value));
+  input.addEventListener("keydown", e => { if (e.key === "Escape") { input.blur(); closeDropdown(); } });
+
+  dropdown.addEventListener("click", e => {
+    const opt = e.target.closest(".ms-option");
+    if (!opt) return;
+    selectedSet.add(opt.dataset.value);
+    input.value = "";
+    renderTags();
+    renderOptions();
+    onChange();
   });
 
-  const themeCounts = countBy(monthRows, "theme");
-  const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
-  const themeWrap = document.getElementById("theme-chips");
-  themeWrap.innerHTML = allThemeNames.filter(t => themeCounts.get(t)).map(t => {
-    const count = themeCounts.get(t) || 0;
-    const selected = state.themeFilter.has(t);
-    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-theme="${escapeAttr(t)}">
-      <span class="dot" style="background:${themeColor(t)}"></span>${escapeHTML(t)} <span class="count">${count}</span>
-    </button>`;
-  }).join("");
-  themeWrap.querySelectorAll(".chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const t = chip.dataset.theme;
-      state.themeFilter.has(t) ? state.themeFilter.delete(t) : state.themeFilter.add(t);
+  tagsWrap.addEventListener("click", e => {
+    const rm = e.target.closest(".ms-tag-remove");
+    if (!rm) return;
+    selectedSet.delete(rm.dataset.remove);
+    renderTags();
+    renderOptions(input.value);
+    onChange();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    selectedSet.clear();
+    renderTags();
+    renderOptions(input.value);
+    onChange();
+  });
+
+  document.addEventListener("click", e => {
+    if (!container.contains(e.target)) closeDropdown();
+  });
+
+  renderTags();
+  renderOptions();
+
+  return {
+    refresh() { renderTags(); renderOptions(dropdown.hidden ? "" : input.value); },
+  };
+}
+
+let statusMultiselect = null;
+let themeMultiselect = null;
+
+function initMultiselects() {
+  statusMultiselect = createMultiselect("status-multiselect", {
+    getOptions: () => {
+      const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
+      const counts = countBy(monthRows, "status");
+      return STATUS_ORDER.map(s => ({ value: s, label: s, count: counts.get(s) || 0 }));
+    },
+    selectedSet: state.statusFilter,
+    onChange: () => {
+      state.page = 1;
+      renderAuditTable();
+    },
+  });
+
+  themeMultiselect = createMultiselect("theme-multiselect", {
+    getOptions: () => {
+      const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
+      const counts = countBy(monthRows, "theme");
+      const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
+      return allThemeNames.filter(t => counts.get(t)).map(t => ({ value: t, label: t, count: counts.get(t) || 0 }));
+    },
+    selectedSet: state.themeFilter,
+    onChange: () => {
       state.activeThemeBar = state.themeFilter.size === 1 ? [...state.themeFilter][0] : null;
       state.page = 1;
-      renderFilterChips();
       renderThemeChart();
       renderAuditTable();
-    });
+    },
   });
+}
+
+function refreshMultiselects() {
+  statusMultiselect?.refresh();
+  themeMultiselect?.refresh();
 }
 
 /* =========================================================================
@@ -436,12 +521,25 @@ function renderAuditTable() {
   document.getElementById("table-count").textContent =
     `Showing ${rows.length} ${rows.length === 1 ? "entry" : "entries"} matching current filters`;
 
+  const showDestinationCol = state.statusFilter.has("Transferred");
+
+  const theadRow = document.getElementById("audit-thead-row");
+  theadRow.innerHTML = `
+    <th data-sort="queueNumber">Query Number</th>
+    <th data-sort="theme">Identified Theme</th>
+    <th data-sort="description">Brief Description of Concern or Inquiry</th>
+    <th data-sort="status">Concern Status</th>
+    <th>Resolution</th>
+    ${showDestinationCol ? '<th>Destination Unit / Office</th>' : ""}
+  `;
+  const colCount = showDestinationCol ? 6 : 5;
+
   const start = (state.page - 1) * PAGE_SIZE;
   const pageRows = rows.slice(start, start + PAGE_SIZE);
 
   const tbody = document.getElementById("audit-tbody");
   if (pageRows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No entries match these filters.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--text-muted);padding:24px;">No entries match these filters.</td></tr>`;
   } else {
     tbody.innerHTML = pageRows.map(r => {
       const meta = STATUS_META[r.status];
@@ -452,6 +550,7 @@ function renderAuditTable() {
         <td class="desc-cell"><div class="clamp">${escapeHTML(r.description) || "—"}</div>${r.description.length > 140 ? '<button class="expand-btn" data-expand>Show more</button>' : ""}</td>
         <td><span class="status-tag ${meta.cssClass}">${r.status}</span></td>
         <td class="resolution-cell"><div class="clamp">${escapeHTML(r.resolution) || "—"}</div>${r.resolution.length > 140 ? '<button class="expand-btn" data-expand>Show more</button>' : ""}</td>
+        ${showDestinationCol ? `<td>${escapeHTML(r.destination) || "—"}</td>` : ""}
       </tr>`;
     }).join("");
     tbody.querySelectorAll("[data-expand]").forEach(btn => {
@@ -465,7 +564,7 @@ function renderAuditTable() {
 
   renderPagination(rows.length);
 
-  document.querySelectorAll("#audit-table th[data-sort]").forEach(th => {
+  theadRow.querySelectorAll("th[data-sort]").forEach(th => {
     th.classList.toggle("sorted", th.dataset.sort === state.sortKey);
     th.classList.toggle("asc", th.dataset.sort === state.sortKey && state.sortDir === 1);
   });
@@ -533,7 +632,7 @@ function renderAll() {
   renderMonthSelect();
   renderMonthStats();
   renderThemeChart();
-  renderFilterChips();
+  refreshMultiselects();
   renderAuditTable();
   renderDestinationTable();
 }
@@ -560,7 +659,7 @@ function wireEvents() {
     state.themeFilter.clear();
     renderMonthStats();
     renderThemeChart();
-    renderFilterChips();
+    refreshMultiselects();
     renderAuditTable();
   });
 
@@ -577,20 +676,22 @@ function wireEvents() {
     state.searchText = "";
     document.getElementById("search-input").value = "";
     state.page = 1;
-    renderFilterChips();
+    refreshMultiselects();
     renderThemeChart();
     renderAuditTable();
   });
 
   document.getElementById("export-btn").addEventListener("click", exportFilteredCSV);
 
-  document.querySelectorAll("#audit-table th[data-sort]").forEach(th => {
-    th.addEventListener("click", () => {
-      if (state.sortKey === th.dataset.sort) state.sortDir *= -1;
-      else { state.sortKey = th.dataset.sort; state.sortDir = 1; }
-      renderAuditTable();
-    });
+  document.getElementById("audit-thead-row").addEventListener("click", e => {
+    const th = e.target.closest("th[data-sort]");
+    if (!th) return;
+    if (state.sortKey === th.dataset.sort) state.sortDir *= -1;
+    else { state.sortKey = th.dataset.sort; state.sortDir = 1; }
+    renderAuditTable();
   });
+
+  initMultiselects();
 
   [["audit-toggle", "audit-body"], ["dest-toggle", "dest-body"]].forEach(([toggleId, bodyId]) => {
     document.getElementById(toggleId).addEventListener("click", () => {
