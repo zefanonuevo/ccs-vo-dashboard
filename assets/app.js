@@ -619,9 +619,13 @@ function wireEvents() {
    INIT
    ========================================================================= */
 document.addEventListener("DOMContentLoaded", () => {
-  wireEvents();
   loadData();
   setInterval(() => loadData({ silent: true }), AUTO_REFRESH_MS);
+  try {
+    wireEvents();
+  } catch (err) {
+    console.error("wireEvents failed:", err);
+  }
 });
 
 })();
