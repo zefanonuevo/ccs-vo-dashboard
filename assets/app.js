@@ -647,6 +647,10 @@ function startDashboard() {
   document.getElementById("app-shell").hidden = false;
   const user = localStorage.getItem(AUTH_STORAGE_KEY);
   document.getElementById("signed-in-as").textContent = user ? `Signed in as ${user}` : "";
+  document.getElementById("logout-btn")?.addEventListener("click", () => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    location.reload();
+  });
   loadData();
   setInterval(() => loadData({ silent: true }), AUTO_REFRESH_MS);
   try {
@@ -657,11 +661,6 @@ function startDashboard() {
 }
 
 function wireLogin() {
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    location.reload();
-  });
-
   const form = document.getElementById("login-form");
   const errorEl = document.getElementById("login-error");
   const submitBtn = document.getElementById("login-submit");
@@ -674,7 +673,7 @@ function wireLogin() {
     try {
       const username = document.getElementById("login-username").value.trim();
       const password = document.getElementById("login-password").value;
-      const res = await fetch(USERS_URL, { cache: "no-store" });
+      const res = await fetch(USERS_URL + "?cachebust=" + Date.now(), { cache: "no-store" });
       const users = await res.json();
       const match = users.find(u => u.username === username);
       const computed = match ? await sha256Hex(match.salt + password) : null;
