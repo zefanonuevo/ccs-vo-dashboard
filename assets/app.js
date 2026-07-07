@@ -160,10 +160,11 @@ function buildRecords(rawRows) {
 /* =========================================================================
    DATA LOADING
    ========================================================================= */
+const AUTO_REFRESH_MS = 60000;
+
 async function loadData({ silent = false, isManual = false } = {}) {
   const statusEl = document.getElementById("load-status");
-  const refreshBtn = document.getElementById("refresh-btn");
-  refreshBtn.classList.add("spinning");
+  const liveBadge = document.getElementById("live-badge");
   if (!silent) {
     statusEl.hidden = false;
     statusEl.className = "load-status loading";
@@ -185,18 +186,17 @@ async function loadData({ silent = false, isManual = false } = {}) {
     }
 
     statusEl.hidden = true;
-    document.getElementById("last-updated").textContent =
-      `${state.records.length} logged queries · updated ${new Date().toLocaleString()}`;
+    document.getElementById("last-updated").textContent = `${state.records.length} logged queries`;
+    liveBadge.hidden = false;
     renderAll();
     if (isManual) showToast("Dashboard refreshed");
   } catch (err) {
     console.error(err);
     statusEl.hidden = false;
     statusEl.className = "load-status error";
-    statusEl.textContent = `Couldn't load the spreadsheet (${err.message}). Check your connection and try Refresh.`;
+    statusEl.textContent = `Couldn't load the spreadsheet (${err.message}). Retrying automatically every minute.`;
     document.getElementById("last-updated").textContent = "Data unavailable";
-  } finally {
-    refreshBtn.classList.remove("spinning");
+    liveBadge.hidden = true;
   }
 }
 
@@ -592,9 +592,6 @@ function wireEvents() {
     });
   });
 
-  document.getElementById("refresh-btn").addEventListener("click", () => loadData({ isManual: true }));
-  document.getElementById("footer-refresh").addEventListener("click", () => loadData({ isManual: true }));
-
   [["audit-toggle", "audit-body"], ["dest-toggle", "dest-body"]].forEach(([toggleId, bodyId]) => {
     document.getElementById(toggleId).addEventListener("click", () => {
       const btn = document.getElementById(toggleId);
@@ -624,6 +621,7 @@ function wireEvents() {
 document.addEventListener("DOMContentLoaded", () => {
   wireEvents();
   loadData();
+  setInterval(() => loadData({ silent: true }), AUTO_REFRESH_MS);
 });
 
 })();
