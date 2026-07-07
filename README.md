@@ -18,16 +18,6 @@ no build step, no API key.
   the Community" — comments that are just "None"/"N/A"/"-" are filtered out of
   the sample), and a collapsible full feedback list. All of it is month-scoped
   via the same "Select Month to Review" pattern as the Operations Dashboard.
-- `guidelines.html` — the CCS Virtual Office Guidelines (`assets/guidelines.js`),
-  a themed rewrite of the source Google Doc: a table-of-contents chip row with
-  smooth-scroll anchors, the 5-step queue workflow as numbered step cards (with
-  a copy-to-clipboard button on the Waiting Room broadcast message), the three
-  work-arrangement categories (Full Online / FWA / Full Onsite) as side-by-side
-  cards instead of the source doc's cramped table, and a collapsible revision
-  history. Static content, not CSV-driven — update the HTML directly if the
-  source doc changes. All the doc's real hyperlinks (registration form, queue
-  status, monitoring sheet, feedback form, consultation schedule, attendance
-  reports, email templates) are preserved as live links.
 
 ## How it works
 
@@ -53,14 +43,13 @@ Two separate pages:
   plaintext passwords stored) and, on success, stores the username in
   `localStorage` and redirects to `dashboard.html`. If already logged in, it
   redirects straight to the dashboard instead of showing the form again.
-- `dashboard.html`, `evaluation.html`, and `guidelines.html` — all guarded the
-  same way. A blocking inline script in each page's `<head>` checks
-  `localStorage` before the page renders and redirects back to `index.html`
-  immediately if there's no session, so there's no flash of content for a
-  logged-out visitor. Each page's own script (`assets/app.js` /
-  `assets/evaluation.js` / `assets/guidelines.js`) repeats that same check on
-  load (belt-and-suspenders) and wires the "Log out" button, which clears the
-  session and sends the user back to `index.html`.
+- `dashboard.html` and `evaluation.html` — both guarded the same way. A
+  blocking inline script in each page's `<head>` checks `localStorage` before
+  the page renders and redirects back to `index.html` immediately if there's
+  no session, so there's no flash of content for a logged-out visitor. Each
+  page's own script (`assets/app.js` / `assets/evaluation.js`) repeats that
+  same check on load (belt-and-suspenders) and wires the "Log out" button,
+  which clears the session and sends the user back to `index.html`.
 
 **This is a deterrent, not real access control.** Anyone can view either
 page's source or `users.json`, and — more importantly — the dashboard's data
