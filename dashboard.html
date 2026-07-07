@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCS Virtual Office Dashboard</title>
+<script>
+if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
+</script>
+<link rel="stylesheet" href="assets/style.css?v=11">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <h1>CCS Virtual Office Dashboard</h1>
+      <p class="subtitle"><span id="last-updated">Loading data&hellip;</span><span class="live-badge" id="live-badge" hidden><span class="live-dot"></span>Live</span></p>
+    </div>
+    <nav class="nav-pills" aria-label="Related resources">
+      <button class="pill pill-active" type="button" data-tab-target="operations">CCS Virtual Office</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Queue Registration Monitoring</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Queue Status</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Staff Schedules</button>
+    </nav>
+    <div class="header-actions">
+      <span class="signed-in-as" id="signed-in-as"></span>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <div class="tabs" role="tablist">
+    <button class="tab tab-active" role="tab" aria-selected="true" data-tab="operations">📊 Operations Dashboard</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="evaluation">📝 Evaluation Analytics</button>
+  </div>
+
+  <div id="load-status" class="load-status" hidden></div>
+
+  <section id="tab-operations" class="tab-panel">
+
+    <div class="two-col-row">
+      <section class="card">
+        <h2 class="card-title">📊 Overall Operations (All-Time)</h2>
+        <div class="stat-grid stat-grid--compact" id="overall-stats">
+          <div class="stat-tile" data-stat="handled">
+            <span class="stat-label">Total Issues Handled</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="resolved">
+            <span class="stat-label">Total Resolved</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="transferred">
+            <span class="stat-label">Total Transferred <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="inprogress">
+            <span class="stat-label">Total In Progress</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title-row">
+          <h2 class="card-title">🗓️ Monthly Operations</h2>
+          <label class="month-select-wrap">
+            <span>Select Month to Review</span>
+            <select id="month-select"></select>
+          </label>
+        </div>
+        <div class="stat-grid stat-grid--compact" id="month-stats">
+          <div class="stat-tile" data-stat="handled">
+            <span class="stat-label">Issues Handled This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="resolved">
+            <span class="stat-label">Resolved This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="transferred">
+            <span class="stat-label">Transferred This Month <span class="info-dot" title="Concerns routed to another office for resolution">?</span></span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+          <div class="stat-tile" data-stat="inprogress">
+            <span class="stat-label">In Progress This Month</span>
+            <span class="stat-value">&ndash;</span>
+            <span class="stat-delta"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card">
+      <h2 class="card-title" id="theme-chart-title">🔍 What Were Clients Inquiring About?</h2>
+      <p class="card-hint">Click a bar to filter the audit log below by that theme.</p>
+      <div id="theme-chart" class="theme-chart"></div>
+    </section>
+
+    <section class="card">
+      <button class="collapse-toggle" id="audit-toggle" type="button" aria-expanded="true">
+        <span class="chevron">▾</span>
+        <span id="audit-title">🔎 View &amp; Filter Detailed Audit Log</span>
+      </button>
+      <div id="audit-body" class="collapsible-body">
+        <h3 class="filter-controls-title">Filter Controls:</h3>
+        <div class="filter-panel">
+          <div class="filter-row">
+            <div class="filter-group">
+              <span class="filter-label">Filter by Concern Status:</span>
+              <div class="chip-row" id="status-chips"></div>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Filter by Identified Topic Theme:</span>
+              <div class="chip-row" id="theme-chips"></div>
+            </div>
+          </div>
+          <div class="filter-group search-group">
+            <input type="search" id="search-input" placeholder="Search within Description or Resolution&hellip;">
+            <button class="link-btn" id="clear-filters-btn" type="button">Clear all</button>
+            <button class="secondary-btn" id="export-btn" type="button">⬇ Export filtered CSV</button>
+          </div>
+        </div>
+        <p class="table-count" id="table-count"></p>
+        <div class="table-scroll">
+          <table class="data-table" id="audit-table">
+            <thead>
+              <tr id="audit-thead-row"></tr>
+            </thead>
+            <tbody id="audit-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <button class="collapse-toggle" id="dest-toggle" type="button" aria-expanded="true">
+        <span class="chevron">▾</span>
+        <span id="dest-title">📮 View Referred Destination Breakdown</span>
+      </button>
+      <div id="dest-body" class="collapsible-body">
+        <div class="chip-row" id="dest-chips"></div>
+      </div>
+    </section>
+
+  </section>
+
+  <section id="tab-evaluation" class="tab-panel" hidden>
+    <section class="card empty-state">
+      <h2 class="card-title">📝 Evaluation Analytics</h2>
+      <p>This tab is reserved for client satisfaction / evaluation survey data. Connect a published survey-responses sheet to light it up &mdash; the layout is ready to go as soon as that data source is available.</p>
+    </section>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/app.js?v=11"></script>
+</body>
+</html>

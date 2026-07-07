@@ -18,18 +18,27 @@ no build step, no API key.
 
 ## Login gate
 
-`index.html` shows a login screen before the dashboard; credentials are checked
-client-side in `assets/app.js` against salted SHA-256 hashes in
-`assets/users.json` (no plaintext passwords are stored). A session is remembered
-in `localStorage` until the user clicks "Log out".
+Two separate pages:
 
-**This is a deterrent, not real access control.** Anyone can view this page's
-source or `users.json`, and — more importantly — the dashboard's data source is
-a Google Sheet published "to the web," so the raw CSV at `CSV_URL` is already
-fetchable by anyone with that URL regardless of this login. If the data needs
-genuine protection, that means either restricting the sheet's publish/sharing
-settings, or moving off static GitHub Pages hosting to something with real
-server-side auth.
+- `index.html` — the login screen. `assets/auth.js` checks the entered
+  credentials against salted SHA-256 hashes in `assets/users.json` (no
+  plaintext passwords stored) and, on success, stores the username in
+  `localStorage` and redirects to `dashboard.html`. If already logged in, it
+  redirects straight to the dashboard instead of showing the form again.
+- `dashboard.html` — the actual dashboard. A blocking inline script in its
+  `<head>` checks `localStorage` before the page renders and redirects back to
+  `index.html` immediately if there's no session, so there's no flash of
+  dashboard content for a logged-out visitor. `assets/app.js` repeats that same
+  check on load (belt-and-suspenders) and wires the "Log out" button, which
+  clears the session and sends the user back to `index.html`.
+
+**This is a deterrent, not real access control.** Anyone can view either
+page's source or `users.json`, and — more importantly — the dashboard's data
+source is a Google Sheet published "to the web," so the raw CSV at `CSV_URL`
+is already fetchable by anyone with that URL regardless of this login. If the
+data needs genuine protection, that means either restricting the sheet's
+publish/sharing settings, or moving off static GitHub Pages hosting to
+something with real server-side auth.
 
 To add/change a user, generate a random salt and `sha256(salt + password)`,
 then add `{ "username", "salt", "hash" }` to `assets/users.json`.
