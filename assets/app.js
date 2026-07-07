@@ -333,7 +333,7 @@ function renderThemeChart() {
       if (state.activeThemeBar) state.themeFilter.add(state.activeThemeBar);
       state.page = 1;
       renderThemeChart();
-      refreshMultiselects();
+      renderFilterChips();
       renderAuditTable();
       document.getElementById("audit-body").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -357,135 +357,51 @@ function hideBarTooltip() {
 }
 
 /* =========================================================================
-   MULTISELECT COMBOBOX (generic tag-input + dropdown)
+   RENDER: filter chips (status + theme) — always-visible clickable pills
    ========================================================================= */
-function createMultiselect(containerId, { getOptions, selectedSet, onChange }) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = `
-    <div class="ms-control">
-      <div class="ms-tags"></div>
-      <input type="text" class="ms-input" autocomplete="off" spellcheck="false">
-      <button type="button" class="ms-clear" title="Clear all" hidden>&times;</button>
-      <span class="ms-caret">▾</span>
-    </div>
-    <div class="ms-dropdown" hidden></div>
-  `;
-  const control = container.querySelector(".ms-control");
-  const tagsWrap = container.querySelector(".ms-tags");
-  const input = container.querySelector(".ms-input");
-  const clearBtn = container.querySelector(".ms-clear");
-  const dropdown = container.querySelector(".ms-dropdown");
+function renderFilterChips() {
+  const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
 
-  function renderTags() {
-    tagsWrap.innerHTML = [...selectedSet].map(value => {
-      const opt = getOptions().find(o => o.value === value);
-      const label = opt ? opt.label : value;
-      return `<span class="ms-tag" title="${escapeAttr(label)}">
-        <span class="ms-tag-label">${escapeHTML(label)}</span>
-        <span class="ms-tag-remove" data-remove="${escapeAttr(value)}">&times;</span>
-      </span>`;
-    }).join("");
-    clearBtn.hidden = selectedSet.size === 0;
-  }
-
-  function renderOptions(filterText) {
-    const q = (filterText || "").trim().toLowerCase();
-    const available = getOptions().filter(o => !selectedSet.has(o.value));
-    const filtered = q ? available.filter(o => o.label.toLowerCase().includes(q)) : available;
-    dropdown.innerHTML = filtered.length
-      ? filtered.map(o => `<div class="ms-option" data-value="${escapeAttr(o.value)}">
-          <span>${escapeHTML(o.label)}</span>${o.count != null ? `<span class="opt-count">${o.count}</span>` : ""}
-        </div>`).join("")
-      : `<div class="ms-empty">No matches</div>`;
-  }
-
-  function openDropdown() { dropdown.hidden = false; renderOptions(input.value); }
-  function closeDropdown() { dropdown.hidden = true; }
-
-  control.addEventListener("click", e => {
-    if (e.target.closest(".ms-tag-remove") || e.target.closest(".ms-clear")) return;
-    input.focus();
-    openDropdown();
-  });
-  input.addEventListener("focus", openDropdown);
-  input.addEventListener("input", () => renderOptions(input.value));
-  input.addEventListener("keydown", e => { if (e.key === "Escape") { input.blur(); closeDropdown(); } });
-
-  dropdown.addEventListener("click", e => {
-    const opt = e.target.closest(".ms-option");
-    if (!opt) return;
-    selectedSet.add(opt.dataset.value);
-    input.value = "";
-    renderTags();
-    renderOptions();
-    onChange();
-  });
-
-  tagsWrap.addEventListener("click", e => {
-    const rm = e.target.closest(".ms-tag-remove");
-    if (!rm) return;
-    selectedSet.delete(rm.dataset.remove);
-    renderTags();
-    renderOptions(input.value);
-    onChange();
-  });
-
-  clearBtn.addEventListener("click", () => {
-    selectedSet.clear();
-    renderTags();
-    renderOptions(input.value);
-    onChange();
-  });
-
-  document.addEventListener("click", e => {
-    if (!container.contains(e.target)) closeDropdown();
-  });
-
-  renderTags();
-  renderOptions();
-
-  return {
-    refresh() { renderTags(); renderOptions(dropdown.hidden ? "" : input.value); },
-  };
-}
-
-let statusMultiselect = null;
-let themeMultiselect = null;
-
-function initMultiselects() {
-  statusMultiselect = createMultiselect("status-multiselect", {
-    getOptions: () => {
-      const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
-      const counts = countBy(monthRows, "status");
-      return STATUS_ORDER.map(s => ({ value: s, label: s, count: counts.get(s) || 0 }));
-    },
-    selectedSet: state.statusFilter,
-    onChange: () => {
+  const statusCounts = countBy(monthRows, "status");
+  const statusWrap = document.getElementById("status-chips");
+  statusWrap.innerHTML = STATUS_ORDER.map(s => {
+    const count = statusCounts.get(s) || 0;
+    const selected = state.statusFilter.has(s);
+    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-status="${s}">
+      <span class="dot" style="background:${STATUS_META[s].color}"></span>${s} <span class="count">${count}</span>
+    </button>`;
+  }).join("");
+  statusWrap.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const s = chip.dataset.status;
+      state.statusFilter.has(s) ? state.statusFilter.delete(s) : state.statusFilter.add(s);
       state.page = 1;
+      renderFilterChips();
       renderAuditTable();
-    },
+    });
   });
 
-  themeMultiselect = createMultiselect("theme-multiselect", {
-    getOptions: () => {
-      const monthRows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
-      const counts = countBy(monthRows, "theme");
-      const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
-      return allThemeNames.filter(t => counts.get(t)).map(t => ({ value: t, label: t, count: counts.get(t) || 0 }));
-    },
-    selectedSet: state.themeFilter,
-    onChange: () => {
+  const themeCounts = countBy(monthRows, "theme");
+  const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
+  const themeWrap = document.getElementById("theme-chips");
+  themeWrap.innerHTML = allThemeNames.filter(t => themeCounts.get(t)).map(t => {
+    const count = themeCounts.get(t) || 0;
+    const selected = state.themeFilter.has(t);
+    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-theme="${escapeAttr(t)}">
+      <span class="dot" style="background:${themeColor(t)}"></span>${escapeHTML(t)} <span class="count">${count}</span>
+    </button>`;
+  }).join("");
+  themeWrap.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const t = chip.dataset.theme;
+      state.themeFilter.has(t) ? state.themeFilter.delete(t) : state.themeFilter.add(t);
       state.activeThemeBar = state.themeFilter.size === 1 ? [...state.themeFilter][0] : null;
       state.page = 1;
+      renderFilterChips();
       renderThemeChart();
       renderAuditTable();
-    },
+    });
   });
-}
-
-function refreshMultiselects() {
-  statusMultiselect?.refresh();
-  themeMultiselect?.refresh();
 }
 
 /* =========================================================================
@@ -632,7 +548,7 @@ function renderAll() {
   renderMonthSelect();
   renderMonthStats();
   renderThemeChart();
-  refreshMultiselects();
+  renderFilterChips();
   renderAuditTable();
   renderDestinationTable();
 }
@@ -659,7 +575,7 @@ function wireEvents() {
     state.themeFilter.clear();
     renderMonthStats();
     renderThemeChart();
-    refreshMultiselects();
+    renderFilterChips();
     renderAuditTable();
   });
 
@@ -676,7 +592,7 @@ function wireEvents() {
     state.searchText = "";
     document.getElementById("search-input").value = "";
     state.page = 1;
-    refreshMultiselects();
+    renderFilterChips();
     renderThemeChart();
     renderAuditTable();
   });
@@ -690,8 +606,6 @@ function wireEvents() {
     else { state.sortKey = th.dataset.sort; state.sortDir = 1; }
     renderAuditTable();
   });
-
-  initMultiselects();
 
   [["audit-toggle", "audit-body"], ["dest-toggle", "dest-body"]].forEach(([toggleId, bodyId]) => {
     document.getElementById(toggleId).addEventListener("click", () => {
