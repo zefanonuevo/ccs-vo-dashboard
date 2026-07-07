@@ -101,6 +101,8 @@
 
 * { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -239,6 +241,113 @@ button, input, select { font-family: inherit; font-size: inherit; }
 @media (max-width: 900px) {
   .two-col-row { grid-template-columns: 1fr; }
   .two-col-row .card:first-child { margin-bottom: 20px; }
+}
+
+/* ---------- three-column card row ---------- */
+.three-col-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) { .three-col-row { grid-template-columns: 1fr; } }
+
+/* ---------- guidelines: table of contents ---------- */
+.toc-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc-row .chip { text-decoration: none; }
+
+/* ---------- guidelines: content blocks ---------- */
+.section-title { font-size: 15px; font-weight: 700; margin: 28px 0 4px; scroll-margin-top: 90px; }
+.section-title:first-child { margin-top: 0; }
+.section-subtitle { font-size: 13px; font-weight: 700; margin: 18px 0 8px; color: var(--text-primary); }
+.guideline-body { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 10px; }
+.guideline-list { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.guideline-list li { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+.guideline-list li strong { color: var(--text-primary); }
+.guideline-list .sub-list { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.guideline-note {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 6px 0 0;
+}
+.step-card {
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  background: var(--surface-page);
+}
+.step-card:last-child { margin-bottom: 0; }
+.step-card h3 { font-size: 13.5px; font-weight: 700; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--series-1);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  flex: none;
+}
+
+.message-block {
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-left: 3px solid var(--series-1);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  position: relative;
+}
+.message-block p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 6px; }
+.message-block p:last-child { margin-bottom: 0; }
+.message-block a { color: var(--series-1); }
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-page);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.copy-btn:hover { background: var(--gridline); color: var(--text-primary); }
+
+.arrangement-card {
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.arrangement-card h3 { font-size: 13.5px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+.arrangement-field { display: flex; flex-direction: column; gap: 3px; }
+.arrangement-field .field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); }
+.arrangement-field .field-value { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+.arrangement-field ul { margin: 4px 0 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px; }
+
+.changelog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* ---------- stat tiles ---------- */

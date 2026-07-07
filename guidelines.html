@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guidelines · CCS Virtual Office Dashboard</title>
+<script>
+if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
+</script>
+<link rel="stylesheet" href="assets/style.css?v=14">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <h1>CCS Virtual Office Dashboard</h1>
+      <p class="subtitle"><span>Reference protocols for CCS Virtual Office operations · Last updated July 6, 2026</span></p>
+    </div>
+    <nav class="nav-pills" aria-label="Related resources">
+      <a class="pill" href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
+      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
+      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
+      <a class="pill" href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
+    </nav>
+    <div class="header-actions">
+      <span class="signed-in-as" id="signed-in-as"></span>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <div class="tabs" role="tablist">
+    <a class="tab" href="dashboard.html" role="tab" aria-selected="false">📊 Operations Dashboard</a>
+    <a class="tab" href="evaluation.html" role="tab" aria-selected="false">📝 Evaluation Analytics</a>
+    <a class="tab tab-active" href="guidelines.html" role="tab" aria-selected="true">📋 Guidelines</a>
+  </div>
+
+  <section class="card">
+    <h2 class="card-title">📋 CCS Virtual Office Guidelines</h2>
+    <p class="card-hint" style="margin-bottom:14px;">Addendum to the CCHRSO Online Work Operations. In addition to the University's Protocols for Online Work Operations, the College implements the following procedures to provide continuous service and accessible communication channels for its stakeholders and the Lasallian community.</p>
+    <div class="toc-row">
+      <a class="chip chip-static" href="#setup"><span class="dot" style="background:var(--series-1)"></span>Virtual Office Setup</a>
+      <a class="chip chip-static" href="#queue"><span class="dot" style="background:var(--series-2)"></span>Queue &amp; Guest Management</a>
+      <a class="chip chip-static" href="#consultations"><span class="dot" style="background:var(--series-3)"></span>Admin &amp; Faculty Consultations</a>
+      <a class="chip chip-static" href="#attendance"><span class="dot" style="background:var(--series-4)"></span>Staff Attendance</a>
+      <a class="chip chip-static" href="#communication"><span class="dot" style="background:var(--series-5)"></span>Communication Channels</a>
+      <a class="chip chip-static" href="#changelog"><span class="dot" style="background:var(--series-other)"></span>Revision History</a>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="setup">🖥️ Virtual Office Setup</h2>
+    <ul class="guideline-list">
+      <li><strong>Centralized Virtual Office:</strong> the College maintains a centralized <a href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">Zoom session</a> to serve as its virtual office during work hours, seamlessly supporting both online and onsite work arrangements. Standard hours of operation are <strong>8AM&ndash;5PM, Monday to Friday</strong>, excluding holidays and work suspensions.</li>
+      <li><strong>Breakout Rooms:</strong> managed by the CCS Technical Support Group (TSG), the Zoom session features pre-defined breakout rooms dedicated to specific office units and functions.</li>
+    </ul>
+    <div class="chip-row" style="margin-bottom:12px;">
+      <span class="chip chip-static">Office of the Dean</span>
+      <span class="chip chip-static">Office of the Associate Dean</span>
+      <span class="chip chip-static">Department of Computer Technology (DCT)</span>
+      <span class="chip chip-static">Department of Information Technology (DIT)</span>
+      <span class="chip chip-static">Department of Software Technology (DST)</span>
+      <span class="chip chip-static">AdRIC</span>
+      <span class="chip chip-static">ADRAS &amp; ADEALM (shared)</span>
+      <span class="chip chip-static">Technical Support Group</span>
+      <span class="chip chip-static">Faculty Consultations</span>
+      <span class="chip chip-static">CCS Administrator Consultations</span>
+      <span class="chip chip-static">Waiting Room</span>
+    </div>
+    <p class="guideline-note">Regardless of work arrangement (online or onsite), TSG is responsible for operating the Zoom session from 8:00 AM to 5:00 PM and providing immediate technical support.</p>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="queue">🎫 Virtual Queue and Guest Management</h2>
+    <p class="guideline-body">To maintain an orderly flow of transactions, the following step-by-step workflow is implemented:</p>
+
+    <div class="step-card">
+      <h3><span class="step-number">1</span>Entry and Registration</h3>
+      <ul class="guideline-list">
+        <li><strong>Waiting Room:</strong> guests entering the Zoom session are held in the Waiting Room, which serves as the virtual queue.</li>
+        <li><strong>Virtual Queue Registration:</strong> to gain entry to the main session, guests must complete the <a href="https://tinyurl.com/CCSVirtualOfficeQueue" target="_blank" rel="noopener noreferrer">Virtual Queue Registration Form</a>, providing their name, ID number, degree program, office needed to contact, and a brief description of their concern.</li>
+        <li><strong>Registration Reminder:</strong> if a guest joins the Waiting Room but fails to complete the form, the Front Desk Officer of the Day (FOD) must send a broadcast message to the Waiting Room participants reminding them to register before admission can be granted.</li>
+      </ul>
+      <div class="message-block">
+        <button class="copy-btn" type="button" id="copy-broadcast">📋 Copy</button>
+        <p id="broadcast-text">Hello and welcome to the DLSU CCS Virtual Office!<br>
+        To help us address your concern promptly, please register first by filling out this form: https://tinyurl.com/CCSVirtualOfficeQueue (link on the displayed QR code).<br>
+        Once submitted, you will be placed in a virtual queue, which you can view at https://tinyurl.com/CCSVirtualQueueStatus, and a CCS support staff member will be assigned to assist you shortly.<br>
+        Thank you for your patience.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <h3><span class="step-number">2</span>Queue Assignment and Status Tracking</h3>
+      <ul class="guideline-list">
+        <li><strong>Virtual Queue Number:</strong> upon submitting the form, the guest automatically receives a unique Queue Number at the email address they provided during registration.</li>
+        <li><strong>Virtual Queue Status:</strong> the <a href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Virtual Queue Status</a> displays the list of guests currently being attended to and still waiting to be assigned. The staff assigned to an inquiry must promptly update the call status so waiting guests are kept informed of their place in the queue.</li>
+      </ul>
+    </div>
+
+    <div class="step-card">
+      <h3><span class="step-number">3</span>Reception and Routing</h3>
+      <ul class="guideline-list">
+        <li>The designated FOD welcomes the guest in the Main Room, verifies their inquiry based on their registration form, and assigns them to the breakout room with the appropriate or available staff who can assist them.</li>
+        <li><strong>Status Update:</strong> immediately upon assigning the guest, the FOD must update the <a href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Virtual Office Monitoring</a>, set the Call Status to Assigned, and log the name of the staff assigned to handle the inquiry.</li>
+        <li>If necessary, the FOD should politely inform guests regarding expected delays during high-traffic periods.</li>
+      </ul>
+    </div>
+
+    <div class="step-card">
+      <h3><span class="step-number">4</span>Service Evaluation</h3>
+      <p class="guideline-body" style="margin:0;">Following the resolution of an inquiry, the assigned staff member must request the guest to accomplish the <a href="https://tinyurl.com/CCSVirtualOfficeFeedback" target="_blank" rel="noopener noreferrer">Virtual Office Feedback Form</a>. The feedback results will be used for continuous service improvement and optimization, as well as staff performance recognition.</p>
+    </div>
+
+    <div class="step-card">
+      <h3><span class="step-number">5</span>Resolution and Monitoring</h3>
+      <p class="guideline-body">Once the consultation concludes, the assigned staff member must promptly update the <a href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Virtual Office Monitoring</a> with the following details:</p>
+      <ul class="guideline-list">
+        <li><strong>Call Status:</strong> change to End.</li>
+        <li><strong>Concern Status</strong> &mdash; one of:
+          <ul class="sub-list">
+            <li><strong>New:</strong> the inquiry has just been logged but not yet processed (primarily for initial queueing).</li>
+            <li><strong>In Progress:</strong> the inquiry is ongoing and resolution is still pending.
+              <p class="guideline-note">Use this status for internal CCS consultations. If the concern is to be referred to the CCS APO or another CCS staff, keep the status as In Progress and tag the other staff in the "Transferred to CCS APO or another CCS staff" column.</p>
+            </li>
+            <li><strong>Resolved (CCS):</strong> the inquiry has been fully addressed and completed by the respective CCS unit.</li>
+            <li><strong>Transferred:</strong> select only if the guest is referred to another University office or unit outside CCS that is better equipped to handle the request. If selected, specify the non-CCS unit or office in the "Referred to Another Office" column.</li>
+          </ul>
+        </li>
+        <li><strong>Referral:</strong> if the concern was referred to another University office or unit outside CCS, tag the request with the concerned office or unit in the "Referred to Another Office" column.</li>
+        <li><strong>Resolution:</strong> staff must provide detailed descriptions of how the inquiry was handled or to whom it was referred &mdash; for documentation, to inform other staff of how an inquiry was handled, to build the knowledge base, and to record transaction history per guest or inquiry.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="consultations">🎓 CCS Administrators or Faculty Consultations</h2>
+    <p class="section-subtitle">For scheduled consultations with CCS administrators</p>
+    <ul class="guideline-list">
+      <li>The TSG will review the <a href="https://tinyurl.com/CCSVirtualConsultationSchedule" target="_blank" rel="noopener noreferrer">CCS Administrators' Virtual Consultation Schedules</a> daily and prepare dedicated breakout rooms accordingly.</li>
+      <li>Guests with pre-scheduled administrator consultations must undergo the standard reception, registration, and queueing procedure before the FOD assigns them to their designated breakout room.</li>
+    </ul>
+    <p class="section-subtitle">For scheduled consultations with CCS faculty</p>
+    <ul class="guideline-list" style="margin-bottom:0;">
+      <li>The TSG will prepare these dedicated faculty breakout rooms as needed.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="attendance">👥 Staff Attendance and Participation</h2>
+    <p class="guideline-body">All CCS support staff are expected to be present and active during the session in accordance with their approved work schedules. If a staff member must step away or is unavailable due to official work commitments or approved leaves, they must coordinate with the designated FOD to make necessary adjustments and ensure continuity of service.</p>
+    <p class="guideline-note">To facilitate proper monitoring of the required 8-hour workday while on WFH, all activities that require staff to be off the virtual office must be recorded in the "Activities outside Virtual Office while on WFH" section on the <a href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">CCS Staff Schedules sheet</a> (2nd tab), including the time, duration, and purpose/nature of the activity.</p>
+
+    <p class="section-subtitle" style="margin-top:20px;">FOD assignments by work arrangement</p>
+    <div class="three-col-row" style="margin-bottom:0;">
+      <div class="arrangement-card">
+        <h3>🏠 Full Online</h3>
+        <div class="arrangement-field">
+          <span class="field-label">Work Arrangement</span>
+          <span class="field-value">All CCS support staff are working from home (notwithstanding the work arrangements of laboratory technicians).</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">FOD Arrangement</span>
+          <span class="field-value"><strong>FOD and Backup:</strong> assigned on a rotational basis across all CCS units.</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">Virtual Office Attendance</span>
+          <span class="field-value">All CCS support staff must be logged into and active in the Virtual Office.</span>
+        </div>
+      </div>
+
+      <div class="arrangement-card">
+        <h3>🔀 Flexible (FWA)</h3>
+        <div class="arrangement-field">
+          <span class="field-label">Work Arrangement</span>
+          <span class="field-value">CCS support staff alternate between onsite reporting and WFH based on approved schedules.</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">FOD Arrangement</span>
+          <span class="field-value"><strong>FOD (Online):</strong> rotated among staff on their scheduled WFH day.<br><strong>FOD (Onsite):</strong> rotated among staff reporting onsite.</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">Virtual Office Attendance</span>
+          <span class="field-value">At least one (1) support staff member per unit must be present in the Virtual Office.
+            <ul>
+              <li>If a unit staff member is on WFH, they must be logged into and active in the Virtual Office.</li>
+              <li>If no unit staff are on WFH: Academic Departments &rarr; Office Manager; Other Units &rarr; staff assigned on an alternating basis.</li>
+              <li>If there is only one (1) unit staff, they are automatically assigned to the Virtual Office.</li>
+            </ul>
+          </span>
+        </div>
+      </div>
+
+      <div class="arrangement-card">
+        <h3>🏢 Full Onsite</h3>
+        <div class="arrangement-field">
+          <span class="field-label">Work Arrangement</span>
+          <span class="field-value">All CCS support staff are physically reporting to the campus.</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">FOD Arrangement</span>
+          <span class="field-value"><strong>FOD:</strong> assigned on a rotational basis across all CCS units.</span>
+        </div>
+        <div class="arrangement-field">
+          <span class="field-label">Virtual Office Attendance</span>
+          <span class="field-value">At least one (1) support staff member per unit must be present in the Virtual Office.
+            <ul>
+              <li>Academic Departments &rarr; Office Manager.</li>
+              <li>Other Units &rarr; staff assigned on an alternating basis.</li>
+              <li>If there is only one (1) unit staff, they are automatically assigned to the Virtual Office.</li>
+            </ul>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-subtitle">Attendance tracking</p>
+    <ul class="guideline-list" style="margin-bottom:0;">
+      <li>TSG will generate the Zoom attendance report at the end of each day and upload it to the provided <a href="https://drive.google.com/drive/folders/1FHq5nqekfZrp_EEjQH0du_V9BYEe2w2T?usp=drive_link" target="_blank" rel="noopener noreferrer">CCS Attendance Reports</a> folder.</li>
+      <li>Submission of the reports to the CCHRSO will be done by the Unit Assistants following review and endorsement by their respective Unit Heads.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title" id="communication">📧 Supplementary Communication Channels</h2>
+    <p class="section-subtitle" style="margin-top:0;">Email response protocols</p>
+    <p class="guideline-body">It is important to reassure our stakeholders that we remain fully operational and ready to assist them during office hours despite the online work arrangement.</p>
+    <ul class="guideline-list">
+      <li>To help communicate this clearly, standard templates have been provided for your email replies (<a href="https://drive.google.com/drive/folders/1qSw26-B9V0p9ETat8Y1m0u-bUgeQtcFu?usp=drive_link" target="_blank" rel="noopener noreferrer">Email Templates</a>).</li>
+      <li>All incoming email inquiries must be addressed within 24 to 48 hours of receipt. At a minimum, a formal acknowledgment email must be sent within this timeframe if an issue requires more time to complete.</li>
+    </ul>
+
+    <p class="section-subtitle">Physical document submission</p>
+    <p class="guideline-body">To facilitate physical document submissions during online work operations, the following protocol is enforced:</p>
+    <ul class="guideline-list" style="margin-bottom:0;">
+      <li>Designated drop boxes are available at the CCS Administrative Offices windows, where clients may submit documents at their convenience.</li>
+      <li>Submissions must be placed in a sealed envelope and clearly labeled with the submitter's name and department.</li>
+      <li>Support staff will send an email confirmation acknowledging receipt of the documents on the next scheduled on-site day.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <button class="collapse-toggle" id="changelog-toggle" type="button" aria-expanded="false">
+      <span class="chevron">▾</span>
+      <span id="changelog-title">📜 Revision History (7 updates)</span>
+    </button>
+    <div id="changelog-body" class="collapsible-body" hidden>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr><th>Date</th><th>Change</th><th>Source</th><th>Updated By</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="changelog-badge">6 Jul 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Clarification of procedures for transfer to another CCS staff (Transferred to CCS APO or another CCS staff) and referral to another University office or unit (Referred to Another Office).</div></td>
+              <td class="desc-cell"><div class="clamp">For better handling of concern classification for the CCS Virtual Office Dashboard</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">22 Jun 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Addition of Activities Outside VO while on WFH monitoring for verification of attendance.</div></td>
+              <td class="desc-cell"><div class="clamp">CCHRSO Requirement of Virtual Office Attendance Verification (Form 005)</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">11 Jun 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Assignment of FOD (Online) and FOD (Onsite) for the FWA category. Revision of Virtual Office Participation (for Onsite) to be one (1) representative per unit.</div></td>
+              <td class="desc-cell"><div class="clamp">CCHRSO Online Session on the new Weekly Attendance Summary Report with Virtual Office Monitoring on 11 June 2026</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">3 Jun 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Revision of attendance on the FWA category for all to be present in the Virtual Office for both online and onsite work arrangements.</div></td>
+              <td class="desc-cell"><div class="clamp">CCHRSO HDA on 29 May 2026</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">20 May 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Addition of work arrangement categories and their corresponding FOD assignment and attendance requirements.</div></td>
+              <td class="desc-cell"><div class="clamp">COC Decision on 20 May 2026</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">4 May 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Inclusion of step-by-step procedures in handling inquiries and issue resolution.</div></td>
+              <td class="desc-cell"><div class="clamp">Refinement of procedures based on actual operations experience for the week of 27&ndash;30 Apr 2026</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+            <tr>
+              <td><span class="changelog-badge">27 Apr 2026</span></td>
+              <td class="desc-cell"><div class="clamp">Introduction of guidelines for the conduct of a centralized CCS Virtual Office, including Zoom session setup, handling inquiries and issue resolution, and staff attendance. Also included are recommended email templates and physical document submission procedures while on WFH.</div></td>
+              <td class="desc-cell"><div class="clamp">Advice of the Dean on 23 Apr 2026; Work Arrangement for May as announced by the Office of the Provost</div></td>
+              <td>Jennina Obieta (CCS QA)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/guidelines.js?v=1"></script>
+</body>
+</html>
