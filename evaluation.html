@@ -114,8 +114,8 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
   </section>
 
   <section class="card">
-    <h2 class="card-title">🎯 Service Quality Breakdown</h2>
-    <p class="card-hint">All-time ratings across the four service dimensions clients scored after every visit.</p>
+    <h2 class="card-title" id="quality-title">🎯 Service Quality Breakdown</h2>
+    <p class="card-hint">Ratings across the four service dimensions clients scored after every visit.</p>
     <div id="quality-bars"></div>
     <div class="quality-legend" id="quality-legend"></div>
   </section>
@@ -168,6 +168,6 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/evaluation.js?v=1"></script>
+<script src="assets/evaluation.js?v=2"></script>
 </body>
 </html>

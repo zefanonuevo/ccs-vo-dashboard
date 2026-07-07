@@ -319,9 +319,14 @@ function renderInsightCard() {
    RENDER: service quality stacked bars
    ========================================================================= */
 function renderQualityBars() {
+  const key = state.selectedMonth;
+  const rows = monthRecords(key);
+  const label = key ? monthLabelOf(key) : "—";
+  document.getElementById("quality-title").textContent = `🎯 Service Quality Breakdown for ${label}`;
+
   const wrap = document.getElementById("quality-bars");
   wrap.innerHTML = RATING_METRICS.map(m => {
-    const vals = state.records.map(r => r[m.key]).filter(Boolean);
+    const vals = rows.map(r => r[m.key]).filter(Boolean);
     const n = vals.length;
     const counts = countValues(vals);
     const segs = RATING_ORDER.map(level => {
@@ -517,6 +522,7 @@ function wireEvents() {
   document.getElementById("month-select").addEventListener("change", e => {
     state.selectedMonth = e.target.value;
     renderMonthStats();
+    renderQualityBars();
     renderSatisfactionChart();
     renderResolutionChips();
   });
