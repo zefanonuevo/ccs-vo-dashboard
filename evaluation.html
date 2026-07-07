@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation Analytics · CCS Virtual Office Dashboard</title>
+<script>
+if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
+</script>
+<link rel="stylesheet" href="assets/style.css?v=12">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <h1>CCS Virtual Office Dashboard</h1>
+      <p class="subtitle"><span id="last-updated">Loading data&hellip;</span><span class="live-badge" id="live-badge" hidden><span class="live-dot"></span>Live</span></p>
+    </div>
+    <nav class="nav-pills" aria-label="Related resources">
+      <button class="pill pill-active" type="button" data-tab-target="operations">CCS Virtual Office</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Queue Registration Monitoring</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Queue Status</button>
+      <button class="pill" type="button" title="Not connected in this dashboard yet">Staff Schedules</button>
+    </nav>
+    <div class="header-actions">
+      <span class="signed-in-as" id="signed-in-as"></span>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <div class="tabs" role="tablist">
+    <a class="tab" href="dashboard.html" role="tab" aria-selected="false">📊 Operations Dashboard</a>
+    <a class="tab tab-active" href="evaluation.html" role="tab" aria-selected="true">📝 Evaluation Analytics</a>
+  </div>
+
+  <div id="load-status" class="load-status" hidden></div>
+
+  <div class="two-col-row">
+    <section class="card">
+      <h2 class="card-title">🌟 Overall Satisfaction (All-Time)</h2>
+      <div class="stat-grid stat-grid--compact" id="overall-stats">
+        <div class="stat-tile" data-stat="responses">
+          <span class="stat-label">Total Responses</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="positive">
+          <span class="stat-label">Positive Satisfaction <span class="info-dot" title="Share of respondents who chose Very Satisfied or Satisfied">?</span></span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="avgrating">
+          <span class="stat-label">Avg. Service Rating <span class="info-dot" title="Mean of Response Time, Staff Knowledge, Staff Courtesy and Ease of Resolution, scored Excellent=5 to Very Poor=1">?</span></span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="resolved">
+          <span class="stat-label">Same-Visit Resolution</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title-row">
+        <h2 class="card-title">🗓️ Monthly Snapshot</h2>
+        <label class="month-select-wrap">
+          <span>Select Month to Review</span>
+          <select id="month-select"></select>
+        </label>
+      </div>
+      <div class="stat-grid stat-grid--compact" id="month-stats">
+        <div class="stat-tile" data-stat="responses">
+          <span class="stat-label">Responses This Month</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="positive">
+          <span class="stat-label">Positive Satisfaction</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="avgrating">
+          <span class="stat-label">Avg. Service Rating</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+        <div class="stat-tile" data-stat="resolved">
+          <span class="stat-label">Same-Visit Resolution</span>
+          <span class="stat-value">&ndash;</span>
+          <span class="stat-delta"></span>
+        </div>
+      </div>
+      <p class="kpi-note" id="month-sample-note"></p>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="insight-card" id="insight-card">
+      <h3>📊 What the Data Tells Us</h3>
+      <ul id="insight-list"><li>Crunching the numbers&hellip;</li></ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">🎯 Service Quality Breakdown</h2>
+    <p class="card-hint">All-time ratings across the four service dimensions clients scored after every visit.</p>
+    <div id="quality-bars"></div>
+    <div class="quality-legend" id="quality-legend"></div>
+  </section>
+
+  <div class="two-col-row">
+    <section class="card">
+      <h2 class="card-title" id="satisfaction-title">😊 How Clients Rated Their Experience</h2>
+      <div id="satisfaction-chart" class="theme-chart"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title" id="resolution-title">✅ Was the Issue Resolved?</h2>
+      <div class="chip-row" id="resolution-chips"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="quote-toolbar">
+      <div>
+        <h2 class="card-title" style="margin-bottom:4px;">🗣️ Voices from the Community</h2>
+        <p class="card-hint" id="quote-subtitle" style="margin:0;">A random sample of what clients told us in their own words.</p>
+      </div>
+      <button class="secondary-btn" id="shuffle-btn" type="button">🔀 Shuffle</button>
+    </div>
+    <div class="quote-grid" id="quote-grid"></div>
+  </section>
+
+  <section class="card">
+    <button class="collapse-toggle" id="feedback-toggle" type="button" aria-expanded="false">
+      <span class="chevron">▾</span>
+      <span id="feedback-title">💬 View All Feedback Comments</span>
+    </button>
+    <div id="feedback-body" class="collapsible-body" hidden>
+      <div class="table-scroll">
+        <table class="data-table" id="feedback-table">
+          <thead>
+            <tr>
+              <th>Queue Number</th>
+              <th>Satisfaction</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody id="feedback-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/evaluation.js?v=1"></script>
+</body>
+</html>

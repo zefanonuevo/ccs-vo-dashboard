@@ -7,7 +7,7 @@
 <script>
 if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
 </script>
-<link rel="stylesheet" href="assets/style.css?v=11">
+<link rel="stylesheet" href="assets/style.css?v=12">
 </head>
 <body>
 
@@ -38,8 +38,8 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 <main class="app-main">
 
   <div class="tabs" role="tablist">
-    <button class="tab tab-active" role="tab" aria-selected="true" data-tab="operations">📊 Operations Dashboard</button>
-    <button class="tab" role="tab" aria-selected="false" data-tab="evaluation">📝 Evaluation Analytics</button>
+    <a class="tab tab-active" href="dashboard.html" role="tab" aria-selected="true">📊 Operations Dashboard</a>
+    <a class="tab" href="evaluation.html" role="tab" aria-selected="false">📝 Evaluation Analytics</a>
   </div>
 
   <div id="load-status" class="load-status" hidden></div>
@@ -161,17 +161,10 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
   </section>
 
-  <section id="tab-evaluation" class="tab-panel" hidden>
-    <section class="card empty-state">
-      <h2 class="card-title">📝 Evaluation Analytics</h2>
-      <p>This tab is reserved for client satisfaction / evaluation survey data. Connect a published survey-responses sheet to light it up &mdash; the layout is ready to go as soon as that data source is available.</p>
-    </section>
-  </section>
-
 </main>
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/app.js?v=11"></script>
+<script src="assets/app.js?v=12"></script>
 </body>
 </html>

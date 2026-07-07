@@ -560,17 +560,6 @@ function renderAll() {
    EVENT WIRING
    ========================================================================= */
 function wireEvents() {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => { t.classList.remove("tab-active"); t.setAttribute("aria-selected", "false"); });
-      tab.classList.add("tab-active");
-      tab.setAttribute("aria-selected", "true");
-      const target = tab.dataset.tab;
-      document.getElementById("tab-operations").hidden = target !== "operations";
-      document.getElementById("tab-evaluation").hidden = target !== "evaluation";
-    });
-  });
-
   document.getElementById("month-select").addEventListener("change", e => {
     state.selectedMonth = e.target.value;
     state.page = 1;
