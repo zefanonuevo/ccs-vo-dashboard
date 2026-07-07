@@ -209,6 +209,7 @@ button, input, select { font-family: inherit; font-size: inherit; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  margin-bottom: 20px;
 }
 .two-col-row .card { margin-bottom: 0; display: flex; flex-direction: column; }
 .two-col-row .card .stat-grid { margin-top: auto; }
@@ -365,6 +366,8 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .chip.selected { background: var(--text-primary); color: var(--surface-card); border-color: var(--text-primary); }
 .chip .count { color: var(--text-muted); }
 .chip.selected .count { color: inherit; opacity: 0.75; }
+.chip-static { cursor: default; font-weight: 600; }
+.chip-static:hover { box-shadow: none; transform: none; }
 #search-input {
   flex: 1 1 240px;
   border: 1px solid var(--border-hairline);

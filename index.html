@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CCS Virtual Office Dashboard</title>
-<link rel="stylesheet" href="assets/style.css?v=5">
+<link rel="stylesheet" href="assets/style.css?v=6">
 </head>
 <body>
 
@@ -146,14 +146,7 @@
         <span>📮 View Referred Destination Breakdown</span>
       </button>
       <div id="dest-body" class="collapsible-body">
-        <div class="table-scroll">
-          <table class="data-table" id="dest-table">
-            <thead>
-              <tr><th>#</th><th>Destination Unit</th><th>Total Queries Routed</th></tr>
-            </thead>
-            <tbody id="dest-tbody"></tbody>
-          </table>
-        </div>
+        <div class="chip-row" id="dest-chips"></div>
       </div>
     </section>
 
@@ -170,6 +163,6 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/app.js?v=5"></script>
+<script src="assets/app.js?v=6"></script>
 </body>
 </html>

@@ -514,10 +514,10 @@ function renderDestinationTable() {
   const rows = state.records.filter(r => r.destination);
   const counts = countBy(rows, "destination");
   const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-  const tbody = document.getElementById("dest-tbody");
-  tbody.innerHTML = entries.length
-    ? entries.map(([dest, count], i) => `<tr><td>${i + 1}</td><td>${escapeHTML(dest)}</td><td>${count}</td></tr>`).join("")
-    : `<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:20px;">No referred-destination data yet.</td></tr>`;
+  const wrap = document.getElementById("dest-chips");
+  wrap.innerHTML = entries.length
+    ? entries.map(([dest, count]) => `<span class="chip chip-static">${escapeHTML(dest)} <span class="count">${count}</span></span>`).join("")
+    : `<p class="card-hint" style="margin:0;">No referred-destination data yet.</p>`;
 }
 
 /* =========================================================================
