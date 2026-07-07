@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CCS Virtual Office Dashboard</title>
-<link rel="stylesheet" href="assets/style.css?v=7">
+<link rel="stylesheet" href="assets/style.css?v=8">
 </head>
 <body>
 
@@ -113,13 +113,15 @@
       <div id="audit-body" class="collapsible-body">
         <h3 class="filter-controls-title">Filter Controls:</h3>
         <div class="filter-panel">
-          <div class="filter-group">
-            <span class="filter-label">Filter by Concern Status:</span>
-            <div class="chip-row" id="status-chips"></div>
-          </div>
-          <div class="filter-group">
-            <span class="filter-label">Filter by Identified Topic Theme:</span>
-            <div class="chip-row" id="theme-chips"></div>
+          <div class="filter-row">
+            <div class="filter-group">
+              <span class="filter-label">Filter by Concern Status:</span>
+              <div class="chip-row" id="status-chips"></div>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Filter by Identified Topic Theme:</span>
+              <div class="chip-row" id="theme-chips"></div>
+            </div>
           </div>
           <div class="filter-group search-group">
             <input type="search" id="search-input" placeholder="Search within Description or Resolution&hellip;">
@@ -163,6 +165,6 @@
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/app.js?v=7"></script>
+<script src="assets/app.js?v=8"></script>
 </body>
 </html>
