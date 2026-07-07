@@ -157,12 +157,14 @@ button, input, select { font-family: inherit; font-size: inherit; }
 }
 .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 auto; }
 .pill {
+  display: inline-block;
   border: 1px solid var(--border-hairline);
   background: transparent;
   color: var(--text-secondary);
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 12px;
+  text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -534,7 +536,7 @@ button, input, select { font-family: inherit; font-size: inherit; }
 }
 
 /* ---------- kpi note (sample-size caveat) ---------- */
-.kpi-note { font-size: 11px; color: var(--text-muted); margin: -6px 0 0; }
+.kpi-note { font-size: 11px; color: var(--text-muted); margin: 14px 0 0; }
 
 /* ---------- insight callout ---------- */
 .insight-card {
