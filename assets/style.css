@@ -150,7 +150,8 @@ button, input, select { font-family: inherit; font-size: inherit; }
 }
 .pill:hover { background: var(--gridline); }
 .pill-active { background: var(--series-1); color: #fff; border-color: var(--series-1); }
-.header-actions { display: flex; gap: 8px; margin-left: auto; }
+.header-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.signed-in-as { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 .icon-btn {
   border: 1px solid var(--border-hairline);
   background: var(--surface-card);
@@ -511,3 +512,51 @@ button, input, select { font-family: inherit; font-size: inherit; }
   0% { background-position: 100% 50%; }
   100% { background-position: 0 50%; }
 }
+
+/* ---------- login screen ---------- */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--surface-page);
+}
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.login-title { font-size: 17px; font-weight: 700; margin: 0; text-align: center; }
+.login-subtitle { font-size: 13px; color: var(--text-muted); margin: -8px 0 0; text-align: center; }
+.login-field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.login-field input {
+  border: 1px solid var(--border-hairline);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 400;
+}
+.login-field input:focus { outline: none; border-color: var(--series-1); }
+.login-error { color: var(--critical); font-size: 12.5px; margin: 0; }
+.login-submit {
+  border: none;
+  border-radius: 8px;
+  background: var(--series-1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px;
+  cursor: pointer;
+}
+.login-submit:hover { filter: brightness(1.08); }
+.login-submit:disabled { opacity: 0.6; cursor: not-allowed; }

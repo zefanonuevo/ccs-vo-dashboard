@@ -1,0 +1,4 @@
+[
+  { "username": "ccsdean", "salt": "b961ee84ad7242b7d84f16d305e76b0e", "hash": "729c402ce431292b79e8371abe48e74531ef673a4f1fe1943e967c71c49b048b" },
+  { "username": "ccsqa", "salt": "7b5b253d60adf9e8f21de34399dbbdeb", "hash": "d2f6d931800ab65bf6faf1f7c8a0171842078c7d3ad36b71c16a48a45bfa442c" }
+]

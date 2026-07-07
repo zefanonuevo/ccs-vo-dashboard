@@ -4,9 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CCS Virtual Office Dashboard</title>
-<link rel="stylesheet" href="assets/style.css?v=8">
+<link rel="stylesheet" href="assets/style.css?v=9">
 </head>
 <body>
+
+<div id="login-screen" class="login-screen">
+  <form class="login-card" id="login-form" autocomplete="off">
+    <h1 class="login-title">CCS Virtual Office Dashboard</h1>
+    <p class="login-subtitle">Sign in to view operations data.</p>
+    <label class="login-field">
+      <span>Username</span>
+      <input type="text" id="login-username" autocomplete="username" required>
+    </label>
+    <label class="login-field">
+      <span>Password</span>
+      <input type="password" id="login-password" autocomplete="current-password" required>
+    </label>
+    <p class="login-error" id="login-error" hidden></p>
+    <button type="submit" class="login-submit" id="login-submit">Log in</button>
+  </form>
+</div>
+
+<div id="app-shell" hidden>
 
 <header class="app-header">
   <div class="header-row">
@@ -21,8 +40,12 @@
       <button class="pill" type="button" title="Not connected in this dashboard yet">Staff Schedules</button>
     </nav>
     <div class="header-actions">
+      <span class="signed-in-as" id="signed-in-as"></span>
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
       </button>
     </div>
   </div>
@@ -163,8 +186,10 @@
 
 </main>
 
+</div>
+
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/app.js?v=8"></script>
+<script src="assets/app.js?v=9"></script>
 </body>
 </html>
