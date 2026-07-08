@@ -600,6 +600,25 @@ button, input, select { font-family: inherit; font-size: inherit; }
 .sat-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .sat-badge .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
 
+/* ---------- knowledge base ---------- */
+.kb-quick-card { cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.kb-quick-card:hover, .kb-quick-card:focus-visible { box-shadow: var(--shadow-card); transform: translateY(-2px); outline: none; }
+.kb-quick-card .quote-text { font-size: 12.5px; }
+.kb-card-list { display: flex; flex-direction: column; gap: 12px; }
+.kb-card {
+  background: var(--surface-page);
+  border: 1px solid var(--border-hairline);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kb-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kb-ref { margin-left: auto; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.kb-q, .kb-a { margin: 0; font-size: 13px; line-height: 1.55; color: var(--text-primary); }
+.kb-qa-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-muted); margin-bottom: 2px; }
+
 /* ---------- login screen ---------- */
 .login-screen {
   min-height: 100vh;

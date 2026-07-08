@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base · CCS Virtual Office Dashboard</title>
+<script>
+if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
+</script>
+<link rel="stylesheet" href="assets/style.css?v=14">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <div class="brand">
+      <h1>CCS Virtual Office Dashboard</h1>
+      <p class="subtitle"><span id="last-updated">Loading data&hellip;</span><span class="live-badge" id="live-badge" hidden><span class="live-dot"></span>Live</span></p>
+    </div>
+    <nav class="nav-pills" aria-label="Related resources">
+      <a class="pill" href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
+      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
+      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
+      <a class="pill" href="https://docs.google.com/document/d/1Y-kxYpbNIOkMgEegbkcQlTLXVoIArrMh9_YchXU_4Ls/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Guidelines</a>
+      <a class="pill" href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
+    </nav>
+    <div class="header-actions">
+      <span class="signed-in-as" id="signed-in-as"></span>
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <div class="tabs" role="tablist">
+    <a class="tab" href="dashboard.html" role="tab" aria-selected="false">📊 Operations Dashboard</a>
+    <a class="tab" href="evaluation.html" role="tab" aria-selected="false">📝 Evaluation Analytics</a>
+    <a class="tab tab-active" href="knowledge-base.html" role="tab" aria-selected="true">🧠 Knowledge Base</a>
+  </div>
+
+  <div id="load-status" class="load-status" hidden></div>
+
+  <section class="card">
+    <div class="insight-card" id="kb-intro">
+      <h3>🧠 Knowledge Base — Client Assistance Reference</h3>
+      <p>Built automatically from resolved and transferred concerns logged in the Operations Dashboard. Use it while
+      assisting a client to quickly find how a similar concern was handled before &mdash; search by keyword, or
+      filter by topic, to pull up a precedent in seconds.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">📚 Knowledge Base Coverage</h2>
+    <div class="stat-grid stat-grid--compact" id="kb-stats">
+      <div class="stat-tile" data-stat="total">
+        <span class="stat-label">Precedents Available</span>
+        <span class="stat-value">&ndash;</span>
+        <span class="stat-delta"></span>
+      </div>
+      <div class="stat-tile" data-stat="themes">
+        <span class="stat-label">Topics Covered</span>
+        <span class="stat-value">&ndash;</span>
+        <span class="stat-delta"></span>
+      </div>
+      <div class="stat-tile" data-stat="topTheme">
+        <span class="stat-label">Most Common Concern</span>
+        <span class="stat-value">&ndash;</span>
+        <span class="stat-delta"></span>
+      </div>
+      <div class="stat-tile" data-stat="updated">
+        <span class="stat-label">Sourced From</span>
+        <span class="stat-value">&ndash;</span>
+        <span class="stat-delta"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">📌 Frequently Handled Concerns</h2>
+    <p class="card-hint">The most common topics clients raise, with a representative example of how each was resolved. Click a topic to jump to every precedent for it.</p>
+    <div id="kb-quick-grid" class="quote-grid"></div>
+  </section>
+
+  <section class="card" id="kb-browse">
+    <h2 class="card-title" id="kb-browse-title">🔎 Search the Knowledge Base</h2>
+    <div class="filter-panel">
+      <div class="filter-group search-group">
+        <input type="search" id="kb-search-input" placeholder="Search a concern or resolution keyword&hellip;">
+        <button class="link-btn" id="kb-clear-btn" type="button">Clear all</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Filter by Topic:</span>
+        <div class="chip-row" id="kb-theme-chips"></div>
+      </div>
+    </div>
+    <p class="table-count" id="kb-count"></p>
+    <div id="kb-results" class="kb-card-list"></div>
+    <div class="pagination" id="kb-pagination"></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="assets/knowledge-base.js?v=1"></script>
+</body>
+</html>

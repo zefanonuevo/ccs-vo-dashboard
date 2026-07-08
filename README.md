@@ -18,16 +18,27 @@ no build step, no API key.
   the Community" — comments that are just "None"/"N/A"/"-" are filtered out of
   the sample), and a collapsible full feedback list. All of it is month-scoped
   via the same "Select Month to Review" pattern as the Operations Dashboard.
+- `knowledge-base.html` — Knowledge Base (`assets/knowledge-base.js`), an
+  internal staff reference built automatically from the same Operations queue
+  log: every Resolved/Transferred entry with a meaningful recorded resolution
+  becomes a searchable "Client asked / How it was handled" precedent, classified
+  by the same topic themes as the Operations Dashboard. It surfaces coverage
+  stats, a "Frequently Handled Concerns" quick-reference grid (top topics with
+  a representative example, click to jump to all precedents for that topic),
+  and a keyword-searchable, topic-filterable, paginated list of every
+  precedent — meant to be pulled up while assisting a client live to find how
+  a similar concern was handled before.
 
 ## How it works
 
-- `assets/app.js` and `assets/evaluation.js` each fetch their own published CSV
-  from the `CSV_URL` constant at the top of the file on load (and every 60s
-  after), parse it, and render. `assets/app.js` additionally classifies each
-  operations entry into a theme (Enrollment & Enlistment, Practicum &
-  Internship, Thesis & Capstone, etc.) by matching keywords in the "Brief
-  Description of Concern or Inquiry" column, since that sheet has no theme
-  column of its own.
+- `assets/app.js`, `assets/evaluation.js`, and `assets/knowledge-base.js` each
+  fetch their own published CSV from the `CSV_URL` constant at the top of the
+  file on load (and every 60s after), parse it, and render. `assets/app.js`
+  and `assets/knowledge-base.js` both classify each operations entry into a
+  theme (Enrollment & Enlistment, Practicum & Internship, Thesis & Capstone,
+  etc.) by matching keywords in the "Brief Description of Concern or Inquiry"
+  column, since that sheet has no theme column of its own — the two files
+  duplicate the same `THEME_DEFS` classifier rather than sharing a module.
 - The month shown throughout both dashboards is derived from the date embedded
   in each response's queue number (format `YYYYMMDD-N`).
 - Everything else (filters, search, sorting, pagination, CSV export, comment
@@ -43,13 +54,14 @@ Two separate pages:
   plaintext passwords stored) and, on success, stores the username in
   `localStorage` and redirects to `dashboard.html`. If already logged in, it
   redirects straight to the dashboard instead of showing the form again.
-- `dashboard.html` and `evaluation.html` — both guarded the same way. A
-  blocking inline script in each page's `<head>` checks `localStorage` before
-  the page renders and redirects back to `index.html` immediately if there's
-  no session, so there's no flash of content for a logged-out visitor. Each
-  page's own script (`assets/app.js` / `assets/evaluation.js`) repeats that
-  same check on load (belt-and-suspenders) and wires the "Log out" button,
-  which clears the session and sends the user back to `index.html`.
+- `dashboard.html`, `evaluation.html`, and `knowledge-base.html` — all guarded
+  the same way. A blocking inline script in each page's `<head>` checks
+  `localStorage` before the page renders and redirects back to `index.html`
+  immediately if there's no session, so there's no flash of content for a
+  logged-out visitor. Each page's own script (`assets/app.js` /
+  `assets/evaluation.js` / `assets/knowledge-base.js`) repeats that same check
+  on load (belt-and-suspenders) and wires the "Log out" button, which clears
+  the session and sends the user back to `index.html`.
 
 **This is a deterrent, not real access control.** Anyone can view either
 page's source or `users.json`, and — more importantly — the dashboard's data
@@ -64,9 +76,10 @@ then add `{ "username", "salt", "hash" }` to `assets/users.json`.
 
 ## Updating the data source
 
-Edit `CSV_URL` at the top of `assets/app.js` (Operations) or
-`assets/evaluation.js` (Evaluation) if either published sheet URL ever changes
-(File → Share → Publish to web → CSV, in Google Sheets).
+Edit `CSV_URL` at the top of `assets/app.js` (Operations), `assets/evaluation.js`
+(Evaluation), or `assets/knowledge-base.js` (Knowledge Base — sourced from the
+same Operations sheet as `assets/app.js`) if a published sheet URL ever
+changes (File → Share → Publish to web → CSV, in Google Sheets).
 
 ## Running locally
 
