@@ -37,6 +37,9 @@ const TRIVIAL_COMMENTS = new Set(["none", "n/a", "na", "not applicable", "-", "n
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M20 7H4a1 1 0 0 0-1 1v3l2.4 6h13.2L21 11V8a1 1 0 0 0-1-1ZM8 4h8l2 3H6l2-3Zm-.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" fill="currentColor"/></svg>';
+function emptyNote(text) { return `<p class="empty-note">${EMPTY_ICON}${text}</p>`; }
+
 /* =========================================================================
    STATE
    ========================================================================= */
@@ -137,6 +140,13 @@ function buildRecords(rawRows) {
 /* =========================================================================
    DATA LOADING
    ========================================================================= */
+const SKELETON_CONTAINER_IDS = ["overall-stats", "month-stats", "quality-bars", "satisfaction-chart"];
+function setLoadingSkeleton(on) {
+  SKELETON_CONTAINER_IDS.forEach(id => {
+    document.getElementById(id)?.classList.toggle("is-loading", on);
+  });
+}
+
 async function loadData({ silent = false } = {}) {
   const statusEl = document.getElementById("load-status");
   const liveBadge = document.getElementById("live-badge");
@@ -144,6 +154,7 @@ async function loadData({ silent = false } = {}) {
     statusEl.hidden = false;
     statusEl.className = "load-status loading";
     statusEl.textContent = "Fetching latest evaluation data…";
+    if (state.records.length === 0) setLoadingSkeleton(true);
   }
   try {
     const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cachebust=" + Date.now();
@@ -163,6 +174,7 @@ async function loadData({ silent = false } = {}) {
     statusEl.hidden = true;
     document.getElementById("last-updated").textContent = `${state.records.length} survey responses`;
     liveBadge.hidden = false;
+    setLoadingSkeleton(false);
     renderAll();
   } catch (err) {
     console.error(err);
@@ -171,6 +183,7 @@ async function loadData({ silent = false } = {}) {
     statusEl.textContent = `Couldn't load the evaluation sheet (${err.message}). Retrying automatically every minute.`;
     document.getElementById("last-updated").textContent = "Data unavailable";
     liveBadge.hidden = true;
+    setLoadingSkeleton(false);
   }
 }
 
@@ -322,7 +335,7 @@ function renderQualityBars() {
   const key = state.selectedMonth;
   const rows = monthRecords(key);
   const label = key ? monthLabelOf(key) : "—";
-  document.getElementById("quality-title").textContent = `🎯 Service Quality Breakdown for ${label}`;
+  document.getElementById("quality-title").textContent = `Service Quality Breakdown for ${label}`;
 
   const wrap = document.getElementById("quality-bars");
   wrap.innerHTML = RATING_METRICS.map(m => {
@@ -374,7 +387,7 @@ function renderSatisfactionChart() {
   const key = state.selectedMonth;
   const rows = monthRecords(key);
   const label = key ? monthLabelOf(key) : "—";
-  document.getElementById("satisfaction-title").textContent = `😊 How Clients Rated Their Experience in ${label}`;
+  document.getElementById("satisfaction-title").textContent = `How Clients Rated Their Experience in ${label}`;
 
   const satVals = rows.map(r => r.satisfaction).filter(Boolean);
   const total = satVals.length;
@@ -394,7 +407,7 @@ function renderSatisfactionChart() {
         </span>
         <span class="bar-value">${count}</span>
       </div>`;
-  }).join("") || `<p class="card-hint">No responses recorded for this month.</p>`;
+  }).join("") || emptyNote("No responses recorded for this month.");
 
   chart.querySelectorAll(".bar-fill").forEach(bar => {
     bar.addEventListener("mouseenter", showBarTooltip);
@@ -418,7 +431,7 @@ function renderResolutionChips() {
   const key = state.selectedMonth;
   const rows = monthRecords(key);
   const label = key ? monthLabelOf(key) : "—";
-  document.getElementById("resolution-title").textContent = `✅ Was the Issue Resolved? (${label})`;
+  document.getElementById("resolution-title").textContent = `Was the Issue Resolved? (${label})`;
 
   const vals = rows.map(r => r.resolved).filter(Boolean);
   const counts = countValues(vals);
@@ -426,7 +439,7 @@ function renderResolutionChips() {
   const wrap = document.getElementById("resolution-chips");
   wrap.innerHTML = entries.length
     ? entries.map(([v, count]) => `<span class="chip chip-static"><span class="dot" style="background:${resolutionColor(v)}"></span>${escapeHTML(v)} <span class="count">${count}</span></span>`).join("")
-    : `<p class="card-hint" style="margin:0;">No responses recorded for this month.</p>`;
+    : emptyNote("No responses recorded for this month.");
 }
 
 /* =========================================================================
@@ -461,7 +474,7 @@ function renderComments() {
 
   const grid = document.getElementById("quote-grid");
   if (pool.length === 0) {
-    grid.innerHTML = `<p class="card-hint">No written comments yet.</p>`;
+    grid.innerHTML = emptyNote("No written comments yet.");
     return;
   }
   const sample = shuffledSample(pool, SHUFFLE_COUNT, Date.now() + state.shuffleSeed);
@@ -481,7 +494,7 @@ function renderComments() {
    ========================================================================= */
 function renderFeedbackTable() {
   const rows = state.records.filter(r => r.comment).sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
-  document.getElementById("feedback-title").textContent = `💬 View All Feedback Comments (${rows.length})`;
+  document.getElementById("feedback-title").textContent = `View All Feedback Comments (${rows.length})`;
   const tbody = document.getElementById("feedback-tbody");
   tbody.innerHTML = rows.length
     ? rows.map(r => `
@@ -490,7 +503,7 @@ function renderFeedbackTable() {
         <td>${satBadge(r.satisfaction) || "—"}</td>
         <td class="desc-cell"><div class="clamp">${escapeHTML(r.comment)}</div>${r.comment.length > 140 ? '<button class="expand-btn" data-expand>Show more</button>' : ""}</td>
       </tr>`).join("")
-    : `<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px;">No comments yet.</td></tr>`;
+    : `<tr><td colspan="3" style="padding:24px;"><p class="empty-note" style="justify-content:center;">${EMPTY_ICON}No comments yet.</p></td></tr>`;
   tbody.querySelectorAll("[data-expand]").forEach(btn => {
     btn.addEventListener("click", () => {
       const clamp = btn.previousElementSibling;

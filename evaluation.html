@@ -17,13 +17,18 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
       <h1>CCS Virtual Office Dashboard</h1>
       <p class="subtitle"><span id="last-updated">Loading data&hellip;</span><span class="live-badge" id="live-badge" hidden><span class="live-dot"></span>Live</span></p>
     </div>
-    <nav class="nav-pills" aria-label="Related resources">
-      <a class="pill" href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
-      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
-      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
-      <a class="pill" href="https://docs.google.com/document/d/1Y-kxYpbNIOkMgEegbkcQlTLXVoIArrMh9_YchXU_4Ls/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Guidelines</a>
-      <a class="pill" href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
-    </nav>
+    <details class="resources-menu">
+      <summary class="resources-toggle">Resources
+        <svg class="chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7Z" fill="currentColor"/></svg>
+      </summary>
+      <nav class="resources-dropdown" aria-label="Related resources">
+        <a href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
+        <a href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
+        <a href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
+        <a href="https://docs.google.com/document/d/1Y-kxYpbNIOkMgEegbkcQlTLXVoIArrMh9_YchXU_4Ls/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Guidelines</a>
+        <a href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
+      </nav>
+    </details>
     <div class="header-actions">
       <span class="signed-in-as" id="signed-in-as"></span>
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -39,29 +44,29 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 <main class="app-main">
 
   <div class="tabs" role="tablist">
-    <a class="tab" href="dashboard.html" role="tab" aria-selected="false">📊 Operations Dashboard</a>
-    <a class="tab tab-active" href="evaluation.html" role="tab" aria-selected="true">📝 Evaluation Analytics</a>
-    <a class="tab" href="knowledge-base.html" role="tab" aria-selected="false">🧠 Knowledge Base</a>
+    <a class="tab" href="dashboard.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h2v-8H4v8Zm7 0h2V8h-2v12Zm7 0h2V4h-2v16Z" fill="currentColor"/></svg>Operations Dashboard</a>
+    <a class="tab tab-active" href="evaluation.html" role="tab" aria-selected="true"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M9 2a1 1 0 0 0-1 1H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2a1 1 0 0 0-1-1H9Zm0 2h6v2H9V4ZM7 11h10v2H7v-2Zm0 5h10v2H7v-2Z" fill="currentColor"/></svg>Evaluation Analytics</a>
+    <a class="tab" href="knowledge-base.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 4a2 2 0 0 1 2-2h13v18H6a2 2 0 0 0-2 2V4Zm2 14h11V4H6v14Z" fill="currentColor"/></svg>Knowledge Base</a>
   </div>
 
   <div id="load-status" class="load-status" hidden></div>
 
   <div class="two-col-row">
     <section class="card">
-      <h2 class="card-title">🌟 Overall Satisfaction (All-Time)</h2>
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="m12 2 2.9 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77l-6.18 3.23L7 14.14 2 9.27l7.1-1.01L12 2Z" fill="currentColor"/></svg>Overall Satisfaction (All-Time)</h2>
       <div class="stat-grid stat-grid--compact" id="overall-stats">
         <div class="stat-tile" data-stat="responses">
           <span class="stat-label">Total Responses</span>
           <span class="stat-value">&ndash;</span>
           <span class="stat-delta"></span>
         </div>
-        <div class="stat-tile" data-stat="positive">
-          <span class="stat-label">Positive Satisfaction <span class="info-dot" title="Share of respondents who chose Very Satisfied or Satisfied">?</span></span>
+        <div class="stat-tile stat-tile--primary" data-stat="positive">
+          <span class="stat-label">Positive Satisfaction <button type="button" class="info-dot" title="Share of respondents who chose Very Satisfied or Satisfied" aria-label="What counts as Positive Satisfaction?">?</button></span>
           <span class="stat-value">&ndash;</span>
           <span class="stat-delta"></span>
         </div>
         <div class="stat-tile" data-stat="avgrating">
-          <span class="stat-label">Avg. Service Rating <span class="info-dot" title="Mean of Response Time, Staff Knowledge, Staff Courtesy and Ease of Resolution, scored Excellent=5 to Very Poor=1">?</span></span>
+          <span class="stat-label">Avg. Service Rating <button type="button" class="info-dot" title="Mean of Response Time, Staff Knowledge, Staff Courtesy and Ease of Resolution, scored Excellent=5 to Very Poor=1" aria-label="How is Avg. Service Rating calculated?">?</button></span>
           <span class="stat-value">&ndash;</span>
           <span class="stat-delta"></span>
         </div>
@@ -75,7 +80,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
     <section class="card">
       <div class="card-title-row">
-        <h2 class="card-title">🗓️ Monthly Snapshot</h2>
+        <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M7 2v2H5a2 2 0 0 0-2 2v2h18V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7Zm14 8H3v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V10Z" fill="currentColor"/></svg>Monthly Snapshot</h2>
         <label class="month-select-wrap">
           <span>Select Month to Review</span>
           <select id="month-select"></select>
@@ -87,7 +92,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
           <span class="stat-value">&ndash;</span>
           <span class="stat-delta"></span>
         </div>
-        <div class="stat-tile" data-stat="positive">
+        <div class="stat-tile stat-tile--primary" data-stat="positive">
           <span class="stat-label">Positive Satisfaction</span>
           <span class="stat-value">&ndash;</span>
           <span class="stat-delta"></span>
@@ -109,13 +114,13 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
   <section class="card">
     <div class="insight-card" id="insight-card">
-      <h3>📊 What the Data Tells Us</h3>
+      <h2><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h2v-8H4v8Zm7 0h2V8h-2v12Zm7 0h2V4h-2v16Z" fill="currentColor"/></svg>What the Data Tells Us</h2>
       <ul id="insight-list"><li>Crunching the numbers&hellip;</li></ul>
     </div>
   </section>
 
   <section class="card">
-    <h2 class="card-title" id="quality-title">🎯 Service Quality Breakdown</h2>
+    <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 16a6 6 0 1 1 6-6 6 6 0 0 1-6 6Zm0-9a3 3 0 1 0 3 3 3 3 0 0 0-3-3Z" fill="currentColor"/></svg><span id="quality-title">Service Quality Breakdown</span></h2>
     <p class="card-hint">Ratings across the four service dimensions clients scored after every visit.</p>
     <div id="quality-bars"></div>
     <div class="quality-legend" id="quality-legend"></div>
@@ -123,12 +128,12 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
   <div class="two-col-row">
     <section class="card">
-      <h2 class="card-title" id="satisfaction-title">😊 How Clients Rated Their Experience</h2>
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm-3.5 7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 17c-2.28 0-4.22-1.66-5-4h10c-.78 2.34-2.72 4-5 4Z" fill="currentColor"/></svg><span id="satisfaction-title">How Clients Rated Their Experience</span></h2>
       <div id="satisfaction-chart" class="theme-chart"></div>
     </section>
 
     <section class="card">
-      <h2 class="card-title" id="resolution-title">✅ Was the Issue Resolved?</h2>
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2Z" fill="currentColor"/></svg><span id="resolution-title">Was the Issue Resolved?</span></h2>
       <div class="chip-row" id="resolution-chips"></div>
     </section>
   </div>
@@ -136,10 +141,10 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
   <section class="card">
     <div class="quote-toolbar">
       <div>
-        <h2 class="card-title" style="margin-bottom:4px;">🗣️ Voices from the Community</h2>
+        <h2 class="card-title" style="margin-bottom:4px;"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M7 7h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 4v-4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2Z" fill="currentColor"/></svg>Voices from the Community</h2>
         <p class="card-hint" id="quote-subtitle" style="margin:0;">A random sample of what clients told us in their own words.</p>
       </div>
-      <button class="secondary-btn" id="shuffle-btn" type="button">🔀 Shuffle</button>
+      <button class="secondary-btn" id="shuffle-btn" type="button"><svg class="icon-inline" viewBox="0 0 24 24" width="14" height="14"><path d="M16 3h5v5h-2V6.41l-3.29 3.3-1.42-1.42L17.59 5H16V3ZM4 5h6.17l7 14H21v2h-6.17l-7-14H4V5Zm12.71 12.29 1.42-1.42L21 18.59V16h2v5h-5v-2h2.59l-3.88-3.71ZM4 17h3.17l1.4 2.83L7.17 21H4v-2Z" fill="currentColor"/></svg>Shuffle</button>
     </div>
     <div class="quote-grid" id="quote-grid"></div>
   </section>
@@ -147,7 +152,8 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
   <section class="card">
     <button class="collapse-toggle" id="feedback-toggle" type="button" aria-expanded="false">
       <span class="chevron">▾</span>
-      <span id="feedback-title">💬 View All Feedback Comments</span>
+      <svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M7 7h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 4v-4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2Z" fill="currentColor"/></svg>
+      <span id="feedback-title">View All Feedback Comments</span>
     </button>
     <div id="feedback-body" class="collapsible-body" hidden>
       <div class="table-scroll">
@@ -169,6 +175,6 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/evaluation.js?v=2"></script>
+<script src="assets/evaluation.js?v=3"></script>
 </body>
 </html>

@@ -717,7 +717,7 @@ button.info-dot {
   flex-direction: column;
   gap: 10px;
 }
-.insight-card h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.insight-card h2 { margin: 0; font-size: var(--fs-md); font-weight: var(--fw-bold); }
 .insight-card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
 .insight-card li { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
 .insight-card li strong { color: var(--text-primary); }
