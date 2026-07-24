@@ -36,6 +36,9 @@ const STATUS_META = {
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M20 7H4a1 1 0 0 0-1 1v3l2.4 6h13.2L21 11V8a1 1 0 0 0-1-1ZM8 4h8l2 3H6l2-3Zm-.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" fill="currentColor"/></svg>';
+function emptyNote(text) { return `<p class="empty-note">${EMPTY_ICON}${text}</p>`; }
+
 /* =========================================================================
    STATE
    ========================================================================= */
@@ -162,6 +165,13 @@ function buildRecords(rawRows) {
    ========================================================================= */
 const AUTO_REFRESH_MS = 60000;
 
+const SKELETON_CONTAINER_IDS = ["overall-stats", "month-stats", "theme-chart"];
+function setLoadingSkeleton(on) {
+  SKELETON_CONTAINER_IDS.forEach(id => {
+    document.getElementById(id)?.classList.toggle("is-loading", on);
+  });
+}
+
 async function loadData({ silent = false, isManual = false } = {}) {
   const statusEl = document.getElementById("load-status");
   const liveBadge = document.getElementById("live-badge");
@@ -169,6 +179,7 @@ async function loadData({ silent = false, isManual = false } = {}) {
     statusEl.hidden = false;
     statusEl.className = "load-status loading";
     statusEl.textContent = "Fetching latest data from Google Sheets…";
+    if (state.records.length === 0) setLoadingSkeleton(true);
   }
   try {
     const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cachebust=" + Date.now();
@@ -188,6 +199,7 @@ async function loadData({ silent = false, isManual = false } = {}) {
     statusEl.hidden = true;
     document.getElementById("last-updated").textContent = `${state.records.length} logged queries`;
     liveBadge.hidden = false;
+    setLoadingSkeleton(false);
     renderAll();
     if (isManual) showToast("Dashboard refreshed");
   } catch (err) {
@@ -197,6 +209,7 @@ async function loadData({ silent = false, isManual = false } = {}) {
     statusEl.textContent = `Couldn't load the spreadsheet (${err.message}). Retrying automatically every minute.`;
     document.getElementById("last-updated").textContent = "Data unavailable";
     liveBadge.hidden = true;
+    setLoadingSkeleton(false);
   }
 }
 
@@ -297,7 +310,7 @@ function renderThemeChart() {
   const key = state.selectedMonth;
   const rows = state.records.filter(r => r.monthKey === key);
   const label = key ? monthLabelOf(key) : "—";
-  document.getElementById("theme-chart-title").textContent = `🔍 What Were Clients Inquiring About in ${label}?`;
+  document.getElementById("theme-chart-title").textContent = `What Were Clients Inquiring About in ${label}?`;
 
   const counts = countBy(rows, "theme");
   const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
@@ -320,7 +333,7 @@ function renderThemeChart() {
         </span>
         <span class="bar-value">${count}</span>
       </div>`;
-  }).join("") || `<p class="card-hint">No queries recorded for this month.</p>`;
+  }).join("") || emptyNote("No queries recorded for this month.");
 
   chart.querySelectorAll(".bar-fill").forEach(bar => {
     bar.addEventListener("mouseenter", showBarTooltip);
@@ -433,7 +446,7 @@ function escapeAttr(s) { return escapeHTML(s).replace(/`/g, "&#96;"); }
 function renderAuditTable() {
   const rows = getFilteredRows();
   const monthLabel = state.selectedMonth ? monthLabelOf(state.selectedMonth) : "all time";
-  document.getElementById("audit-title").textContent = `🔎 View & Filter Detailed Audit Log for ${monthLabel} (${rows.length} items)`;
+  document.getElementById("audit-title").textContent = `View & Filter Detailed Audit Log for ${monthLabel} (${rows.length} items)`;
   document.getElementById("table-count").textContent =
     `Showing ${rows.length} ${rows.length === 1 ? "entry" : "entries"} matching current filters`;
 
@@ -441,10 +454,10 @@ function renderAuditTable() {
 
   const theadRow = document.getElementById("audit-thead-row");
   theadRow.innerHTML = `
-    <th data-sort="queueNumber">Query Number</th>
-    <th data-sort="theme">Identified Theme</th>
-    <th data-sort="description">Brief Description of Concern or Inquiry</th>
-    <th data-sort="status">Concern Status</th>
+    <th data-sort="queueNumber" tabindex="0" role="button">Query Number</th>
+    <th data-sort="theme" tabindex="0" role="button">Identified Theme</th>
+    <th data-sort="description" tabindex="0" role="button">Brief Description of Concern or Inquiry</th>
+    <th data-sort="status" tabindex="0" role="button">Concern Status</th>
     <th>Resolution</th>
     ${showDestinationCol ? '<th>Destination Unit / Office</th>' : ""}
   `;
@@ -455,7 +468,7 @@ function renderAuditTable() {
 
   const tbody = document.getElementById("audit-tbody");
   if (pageRows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center;color:var(--text-muted);padding:24px;">No entries match these filters.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${colCount}" style="padding:24px;"><p class="empty-note" style="justify-content:center;">${EMPTY_ICON}No entries match these filters.</p></td></tr>`;
   } else {
     tbody.innerHTML = pageRows.map(r => {
       const meta = STATUS_META[r.status];
@@ -481,8 +494,10 @@ function renderAuditTable() {
   renderPagination(rows.length);
 
   theadRow.querySelectorAll("th[data-sort]").forEach(th => {
-    th.classList.toggle("sorted", th.dataset.sort === state.sortKey);
-    th.classList.toggle("asc", th.dataset.sort === state.sortKey && state.sortDir === 1);
+    const isSorted = th.dataset.sort === state.sortKey;
+    th.classList.toggle("sorted", isSorted);
+    th.classList.toggle("asc", isSorted && state.sortDir === 1);
+    th.setAttribute("aria-sort", isSorted ? (state.sortDir === 1 ? "ascending" : "descending") : "none");
   });
 }
 
@@ -512,7 +527,7 @@ function renderPagination(totalRows) {
    ========================================================================= */
 function renderDestinationTable() {
   const monthLabel = state.selectedMonth ? monthLabelOf(state.selectedMonth) : "all time";
-  document.getElementById("dest-title").textContent = `📮 Referred Destination Breakdown for ${monthLabel}`;
+  document.getElementById("dest-title").textContent = `Referred Destination Breakdown for ${monthLabel}`;
 
   const rows = state.records.filter(r => r.destination && (!state.selectedMonth || r.monthKey === state.selectedMonth));
   const counts = countBy(rows, "destination");
@@ -520,7 +535,7 @@ function renderDestinationTable() {
   const wrap = document.getElementById("dest-chips");
   wrap.innerHTML = entries.length
     ? entries.map(([dest, count]) => `<span class="chip chip-static">${escapeHTML(dest)} <span class="count">${count}</span></span>`).join("")
-    : `<p class="card-hint" style="margin:0;">No referred-destination data for this month.</p>`;
+    : emptyNote("No referred-destination data for this month.");
 }
 
 /* =========================================================================
@@ -592,12 +607,19 @@ function wireEvents() {
 
   document.getElementById("export-btn").addEventListener("click", exportFilteredCSV);
 
+  function sortByKey(key) {
+    if (state.sortKey === key) state.sortDir *= -1;
+    else { state.sortKey = key; state.sortDir = 1; }
+    renderAuditTable();
+  }
   document.getElementById("audit-thead-row").addEventListener("click", e => {
     const th = e.target.closest("th[data-sort]");
+    if (th) sortByKey(th.dataset.sort);
+  });
+  document.getElementById("audit-thead-row").addEventListener("keydown", e => {
+    const th = e.target.closest("th[data-sort]");
     if (!th) return;
-    if (state.sortKey === th.dataset.sort) state.sortDir *= -1;
-    else { state.sortKey = th.dataset.sort; state.sortDir = 1; }
-    renderAuditTable();
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sortByKey(th.dataset.sort); }
   });
 
   [["audit-toggle", "audit-body"], ["dest-toggle", "dest-body"]].forEach(([toggleId, bodyId]) => {
