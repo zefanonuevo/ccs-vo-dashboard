@@ -17,13 +17,18 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
       <h1>CCS Virtual Office Dashboard</h1>
       <p class="subtitle"><span id="last-updated">Loading data&hellip;</span><span class="live-badge" id="live-badge" hidden><span class="live-dot"></span>Live</span></p>
     </div>
-    <nav class="nav-pills" aria-label="Related resources">
-      <a class="pill" href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
-      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
-      <a class="pill" href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
-      <a class="pill" href="https://docs.google.com/document/d/1Y-kxYpbNIOkMgEegbkcQlTLXVoIArrMh9_YchXU_4Ls/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Guidelines</a>
-      <a class="pill" href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
-    </nav>
+    <details class="resources-menu">
+      <summary class="resources-toggle">Resources
+        <svg class="chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7Z" fill="currentColor"/></svg>
+      </summary>
+      <nav class="resources-dropdown" aria-label="Related resources">
+        <a href="https://tinyurl.com/dlsuccsportal" target="_blank" rel="noopener noreferrer">CCS Virtual Office</a>
+        <a href="https://tinyurl.com/CCSVirtualQueueRegistrations" target="_blank" rel="noopener noreferrer">Queue Registration Monitoring</a>
+        <a href="https://tinyurl.com/CCSVirtualQueueStatus" target="_blank" rel="noopener noreferrer">Queue Status</a>
+        <a href="https://docs.google.com/document/d/1Y-kxYpbNIOkMgEegbkcQlTLXVoIArrMh9_YchXU_4Ls/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Guidelines</a>
+        <a href="https://docs.google.com/spreadsheets/d/1OPuFtE5IlSWIsDm1oUzchO7BdAIyeQQ3E0MCrFZHVM0/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Staff Schedules</a>
+      </nav>
+    </details>
     <div class="header-actions">
       <span class="signed-in-as" id="signed-in-as"></span>
       <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -39,16 +44,16 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 <main class="app-main">
 
   <div class="tabs" role="tablist">
-    <a class="tab" href="dashboard.html" role="tab" aria-selected="false">📊 Operations Dashboard</a>
-    <a class="tab" href="evaluation.html" role="tab" aria-selected="false">📝 Evaluation Analytics</a>
-    <a class="tab tab-active" href="knowledge-base.html" role="tab" aria-selected="true">🧠 Knowledge Base</a>
+    <a class="tab" href="dashboard.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h2v-8H4v8Zm7 0h2V8h-2v12Zm7 0h2V4h-2v16Z" fill="currentColor"/></svg>Operations Dashboard</a>
+    <a class="tab" href="evaluation.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M9 2a1 1 0 0 0-1 1H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2a1 1 0 0 0-1-1H9Zm0 2h6v2H9V4ZM7 11h10v2H7v-2Zm0 5h10v2H7v-2Z" fill="currentColor"/></svg>Evaluation Analytics</a>
+    <a class="tab tab-active" href="knowledge-base.html" role="tab" aria-selected="true"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M5 3a2 2 0 0 0-2 2v16l9-4 9 4V5a2 2 0 0 0-2-2H5Z" fill="currentColor"/></svg>Knowledge Base</a>
   </div>
 
   <div id="load-status" class="load-status" hidden></div>
 
   <section class="card">
     <div class="insight-card" id="kb-intro">
-      <h3>🧠 Knowledge Base — Client Assistance Reference</h3>
+      <h2><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M5 3a2 2 0 0 0-2 2v16l9-4 9 4V5a2 2 0 0 0-2-2H5Z" fill="currentColor"/></svg>Knowledge Base — Client Assistance Reference</h2>
       <p>Built automatically from resolved and transferred concerns logged in the Operations Dashboard. Use it while
       assisting a client to quickly find how a similar concern was handled before &mdash; search by keyword, or
       filter by topic, to pull up a precedent in seconds.</p>
@@ -56,9 +61,9 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
   </section>
 
   <section class="card">
-    <h2 class="card-title">📚 Knowledge Base Coverage</h2>
+    <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h2v-8H4v8Zm7 0h2V8h-2v12Zm7 0h2V4h-2v16Z" fill="currentColor"/></svg>Knowledge Base Coverage</h2>
     <div class="stat-grid stat-grid--compact" id="kb-stats">
-      <div class="stat-tile" data-stat="total">
+      <div class="stat-tile stat-tile--primary" data-stat="total">
         <span class="stat-label">Precedents Available</span>
         <span class="stat-value">&ndash;</span>
         <span class="stat-delta"></span>
@@ -82,13 +87,13 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
   </section>
 
   <section class="card">
-    <h2 class="card-title">📌 Frequently Handled Concerns</h2>
+    <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="m12 2 2.9 6.26L22 9.27l-5 4.87 1.18 6.86L12 17.77l-6.18 3.23L7 14.14 2 9.27l7.1-1.01L12 2Z" fill="currentColor"/></svg>Frequently Handled Concerns</h2>
     <p class="card-hint">The most common topics clients raise, with a representative example of how each was resolved. Click a topic to jump to every precedent for it.</p>
     <div id="kb-quick-grid" class="quote-grid"></div>
   </section>
 
   <section class="card" id="kb-browse">
-    <h2 class="card-title" id="kb-browse-title">🔎 Search the Knowledge Base</h2>
+    <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5L20.49 19l-5-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z" fill="currentColor"/></svg><span id="kb-browse-title">Search the Knowledge Base</span></h2>
     <div class="filter-panel">
       <div class="filter-group search-group">
         <input type="search" id="kb-search-input" placeholder="Search a concern or resolution keyword&hellip;">
@@ -108,6 +113,6 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/knowledge-base.js?v=1"></script>
+<script src="assets/knowledge-base.js?v=2"></script>
 </body>
 </html>

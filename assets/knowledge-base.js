@@ -32,6 +32,9 @@ const MONTH_NAMES = ["January","February","March","April","May","June","July","A
 
 const TRIVIAL_RESOLUTIONS = new Set(["none", "n/a", "na", "not applicable", "-", "nil", "tbd", "pending", "n/a."]);
 
+const EMPTY_ICON = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M20 7H4a1 1 0 0 0-1 1v3l2.4 6h13.2L21 11V8a1 1 0 0 0-1-1ZM8 4h8l2 3H6l2-3Zm-.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" fill="currentColor"/></svg>';
+function emptyNote(text) { return `<p class="empty-note">${EMPTY_ICON}${text}</p>`; }
+
 /* =========================================================================
    STATE
    ========================================================================= */
@@ -154,12 +157,20 @@ function buildEntries(rawRows) {
    ========================================================================= */
 const AUTO_REFRESH_MS = 60000;
 
+const SKELETON_CONTAINER_IDS = ["kb-stats"];
+function setLoadingSkeleton(on) {
+  SKELETON_CONTAINER_IDS.forEach(id => {
+    document.getElementById(id)?.classList.toggle("is-loading", on);
+  });
+}
+
 async function loadData({ silent = false } = {}) {
   const statusEl = document.getElementById("load-status");
   if (!silent) {
     statusEl.hidden = false;
     statusEl.className = "load-status loading";
     statusEl.textContent = "Fetching latest data from Google Sheets…";
+    if (state.entries.length === 0) setLoadingSkeleton(true);
   }
   try {
     const url = CSV_URL + (CSV_URL.includes("?") ? "&" : "?") + "cachebust=" + Date.now();
@@ -173,6 +184,7 @@ async function loadData({ silent = false } = {}) {
     statusEl.hidden = true;
     document.getElementById("last-updated").textContent = `${state.entries.length} indexed precedents`;
     document.getElementById("live-badge").hidden = false;
+    setLoadingSkeleton(false);
     renderAll();
   } catch (err) {
     console.error(err);
@@ -181,6 +193,7 @@ async function loadData({ silent = false } = {}) {
     statusEl.textContent = `Couldn't load the spreadsheet (${err.message}). Retrying automatically every minute.`;
     document.getElementById("last-updated").textContent = "Data unavailable";
     document.getElementById("live-badge").hidden = true;
+    setLoadingSkeleton(false);
   }
 }
 
@@ -241,7 +254,7 @@ function renderQuickTopics() {
         <p class="quote-text"><strong>How it was handled:</strong> ${escapeHTML(truncate(sample.resolution, 130))}</p>
         <div class="quote-footer"><span class="quote-date">See all ${count} precedents &rarr;</span></div>
       </div>`;
-  }).join("") || `<p class="card-hint" style="margin:0;">No precedents indexed yet.</p>`;
+  }).join("") || emptyNote("No precedents indexed yet.");
 
   grid.querySelectorAll("[data-jump-theme]").forEach(card => {
     const jump = () => {
@@ -313,7 +326,7 @@ function renderResults() {
 
   const list = document.getElementById("kb-results");
   if (pageRows.length === 0) {
-    list.innerHTML = `<p class="card-hint" style="margin:0;">No precedents match these filters. Try a different keyword or clear the topic filter.</p>`;
+    list.innerHTML = emptyNote("No precedents match these filters. Try a different keyword or clear the topic filter.");
   } else {
     list.innerHTML = pageRows.map(e => {
       const statusClass = e.status === "Resolved" ? "resolved" : "transferred";
