@@ -222,9 +222,14 @@ function pct(n, d) { return d > 0 ? Math.round((n / d) * 1000) / 10 : 0; }
 function showToast(msg) {
   const el = document.getElementById("toast");
   el.textContent = msg;
+  el.classList.remove("out");
   el.hidden = false;
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => { el.hidden = true; }, 2200);
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+  clearTimeout(showToast._t); clearTimeout(showToast._o);
+  showToast._t = setTimeout(() => {
+    el.classList.add("out");
+    showToast._o = setTimeout(() => { el.hidden = true; el.classList.remove("out"); }, 180);
+  }, 2200);
 }
 
 function countBy(records, key) {
@@ -632,17 +637,6 @@ function wireEvents() {
     });
   });
 
-  const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.addEventListener("click", () => {
-    const root = document.documentElement;
-    const current = root.getAttribute("data-theme") ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    localStorage.setItem("ccs-vo-theme", next);
-  });
-  const savedTheme = localStorage.getItem("ccs-vo-theme");
-  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
 }
 
 /* =========================================================================

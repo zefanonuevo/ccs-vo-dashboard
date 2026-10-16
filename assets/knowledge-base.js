@@ -397,17 +397,6 @@ function wireEvents() {
     renderResults();
   });
 
-  const themeToggle = document.getElementById("theme-toggle");
-  themeToggle.addEventListener("click", () => {
-    const root = document.documentElement;
-    const current = root.getAttribute("data-theme") ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    localStorage.setItem("ccs-vo-theme", next);
-  });
-  const savedTheme = localStorage.getItem("ccs-vo-theme");
-  if (savedTheme) document.documentElement.setAttribute("data-theme", savedTheme);
 }
 
 /* =========================================================================

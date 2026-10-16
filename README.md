@@ -42,8 +42,29 @@ no build step, no API key.
 - The month shown throughout both dashboards is derived from the date embedded
   in each response's queue number (format `YYYYMMDD-N`).
 - Everything else (filters, search, sorting, pagination, CSV export, comment
-  shuffling, dark mode) runs entirely client-side against the parsed data — no
-  dependencies, no CDN.
+  shuffling) runs entirely client-side against the parsed data. The only
+  external file is the shared design stylesheet (see Design system below).
+
+## Design system
+
+Same macOS-style design as [ccs-task-tracker](https://github.com/zefanonuevo/ccs-task-tracker)
+and [ccs-scgss](https://github.com/zefanonuevo/ccs-scgss): system font stack, frosted
+header, segmented tabs, and a System / Light / Dark theme switch in the header
+(the old single dark-mode button is gone; a choice made with it is carried over once).
+
+- Colors, shadows, easing, type and the theme switch styles load from the shared
+  stylesheet in [ccs-design](https://github.com/zefanonuevo/ccs-design) (v2, green, white
+  and black). `assets/style.css` keeps only what is specific to this app: the chart
+  colors (`--series-*`), the rating ramp (`--rate-*`), and the type and spacing scales.
+  Older names in that file (`--surface-card`, `--brand`, ...) resolve to the shared tokens.
+- `assets/shell.js` runs the theme switch and the tab strip on every page.
+- Press feedback 160ms, toasts 240ms in and 160ms out, no animation on tab or page
+  changes, reduced motion becomes a short fade. Bars appear at their final width.
+- On phones the header scrolls away and only the tab strip stays pinned.
+- The theme choice is stored under `ccs-theme` and is shared with the other CCS sites.
+
+The pages need a network connection to load the shared stylesheet (they already need
+one for the Google Sheets data).
 
 ## Login gate
 

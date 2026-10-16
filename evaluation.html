@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{var ct=localStorage.getItem('ccs-theme')||localStorage.getItem('ccs-vo-theme');if(ct==='light'||ct==='dark')document.documentElement.setAttribute('data-theme',ct)}catch(e){}</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b5d45'/%3E%3Cpath d='M8 22V13M14 22V9M20 22V16M26 22V11' stroke='white' stroke-width='2.6' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
 <title>Evaluation Analytics · CCS Virtual Office Dashboard</title>
 <script>
 if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html"); }
 </script>
-<link rel="stylesheet" href="assets/style.css?v=15">
+<link rel="stylesheet" href="https://zefanonuevo.github.io/ccs-design/ccs-tokens.css?v=2">
+<link rel="stylesheet" href="assets/style.css?v=16">
 </head>
 <body>
 
@@ -31,9 +34,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
     </details>
     <div class="header-actions">
       <span class="signed-in-as" id="signed-in-as"></span>
-      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
-        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54A9.03 9.03 0 0 0 12 3Z" fill="currentColor"/></svg>
-      </button>
+      <div class="theme" id="theme" role="radiogroup" aria-label="Color theme"><button type="button" role="radio" data-theme-set="system" aria-checked="true" aria-label="System theme" title="System"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="8.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 14h5M8 11.5V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg></button><button type="button" role="radio" data-theme-set="light" aria-checked="false" aria-label="Light theme" title="Light"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="2.9" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg></button><button type="button" role="radio" data-theme-set="dark" aria-checked="false" aria-label="Dark theme" title="Dark"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.6 5.6 0 1 0 6.8 6.8z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button></div>
       <button class="icon-btn" id="logout-btn" type="button" aria-label="Log out" title="Log out">
         <svg viewBox="0 0 24 24" width="16" height="16"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5v-2H5V5h5V3Zm4.6 4-1.4 1.4 2.6 2.6H8v2h7.8l-2.6 2.6L14.6 17 20 12l-5.4-5Z" fill="currentColor"/></svg>
       </button>
@@ -43,11 +44,11 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 <main class="app-main">
 
-  <div class="tabs" role="tablist">
+  <div class="tabbar"><div class="tabs" role="tablist">
     <a class="tab" href="dashboard.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 20h2v-8H4v8Zm7 0h2V8h-2v12Zm7 0h2V4h-2v16Z" fill="currentColor"/></svg>Operations Dashboard</a>
     <a class="tab tab-active" href="evaluation.html" role="tab" aria-selected="true"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M9 2a1 1 0 0 0-1 1H6a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2a1 1 0 0 0-1-1H9Zm0 2h6v2H9V4ZM7 11h10v2H7v-2Zm0 5h10v2H7v-2Z" fill="currentColor"/></svg>Evaluation Analytics</a>
     <a class="tab" href="knowledge-base.html" role="tab" aria-selected="false"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M5 3a2 2 0 0 0-2 2v16l9-4 9 4V5a2 2 0 0 0-2-2H5Z" fill="currentColor"/></svg>Knowledge Base</a>
-  </div>
+  </div></div>
 
   <div id="load-status" class="load-status" hidden></div>
 
@@ -175,6 +176,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 <div class="toast" id="toast" hidden></div>
 
-<script src="assets/evaluation.js?v=3"></script>
+<script src="assets/shell.js?v=1"></script>
+<script src="assets/evaluation.js?v=4"></script>
 </body>
 </html>
