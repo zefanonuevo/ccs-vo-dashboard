@@ -8,19 +8,19 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBdVhjxW5btyVG
 const PAGE_SIZE = 15;
 
 const THEME_DEFS = [
-  { name: "Thesis & Capstone", color: "var(--series-5)",
+  { name: "Thesis & Capstone", color: "var(--series-7)",
     patterns: [/\bthesis\b/, /\bcapstone\b/, /\bdissertation\b/, /\bdefense\b/, /\bproposal\b/, /\bccs999/, /writing\s*[123]\b/] },
-  { name: "Practicum & Internship", color: "var(--series-2)",
+  { name: "Practicum & Internship", color: "var(--series-3)",
     patterns: [/\bpracticum\b/, /\bojt\b/, /\bintern(ship)?\b/, /\bprct/, /\bprc-/, /\bprcie/, /\bprcne/, /\bprcis/, /\bmoa\b/, /\biom\b/, /\bhte\b/] },
-  { name: "Shifting & Program Change", color: "var(--series-6)",
+  { name: "Shifting & Program Change", color: "var(--series-8)",
     patterns: [/\bshift(ing|ed|s)?\b/, /change\s+of\s+program/] },
-  { name: "Grades & Academic Standing", color: "var(--series-7)",
+  { name: "Grades & Academic Standing", color: "var(--series-5)",
     patterns: [/\bgrade[sd]?\b/, /\bgwa\b/, /\bfail(ed|ing)?\b/, /\bretake\b/, /academic\s+(standing|probation)/, /dean.?s\s+list/, /\bcog\b/, /\btor\b/] },
-  { name: "Leave of Absence / Returnee", color: "var(--series-8)",
+  { name: "Leave of Absence / Returnee", color: "var(--series-2)",
     patterns: [/\bloa\b/, /leave of absence/, /\breturnee\b/] },
-  { name: "Fees & Payment", color: "var(--series-3)",
+  { name: "Fees & Payment", color: "var(--series-4)",
     patterns: [/\bfee[s]?\b/, /\bpayment\b/, /\bmisc\b/, /\btuition\b/, /\brefund\b/, /\bassessment\b/, /\bbilling\b/] },
-  { name: "Curriculum & Degree Program", color: "var(--series-4)",
+  { name: "Curriculum & Degree Program", color: "var(--series-6)",
     patterns: [/\bcurriculum\b/, /course mapping/, /\bderf\b/, /study plan/, /\bflowchart\b/, /\bminor\b/, /program eligib/] },
   { name: "Enrollment & Enlistment", color: "var(--series-1)",
     patterns: [/\benlist/, /\benroll/, /archer/, /\bah\b/, /add.?drop/, /\badd(ing|ed)?\b/, /\bdrop(ping|ped)?\b/, /\bsection[s]?\b/, /\bslot[s]?\b/, /\bconfirm/, /\bclass(es)?\b/, /\bcourse[s]?\b/, /\boffering\b/, /\bresidency\b/, /\belective[s]?\b/, /special class/, /\bcredit(ing|ed)?\b/, /\bpetition/, /\bsubject[s]?\b/] },
@@ -53,6 +53,7 @@ const state = {
   sortDir: 1,
   page: 1,
   activeThemeBar: null, // theme clicked in chart (separate quick-filter)
+  flagFilter: null,     // follow-up flag id, or null
 };
 
 /* =========================================================================
@@ -138,6 +139,9 @@ function monthLabelOf(key) {
 }
 
 function buildRecords(rawRows) {
+  return buildRecordsRaw(rawRows).map(addFlags);
+}
+function buildRecordsRaw(rawRows) {
   return rawRows
     .filter(r => (r["Queue Number"] || "").trim() !== "" || (r["Brief Description of Concern or Inquiry"] || "").trim() !== "")
     .map(r => {
@@ -151,13 +155,49 @@ function buildRecords(rawRows) {
         degreeProgram: r["Degree Program (please skip this question, if you are not a student)"] || "",
         description: r["Brief Description of Concern or Inquiry"] || "",
         status,
+        rawStatus: (r["Concern Status"] || "").trim(),
         resolution: r["Resolution"] || "",
         destination,
         date,
+        day: date ? date.getDate() : null,
         monthKey: date ? monthKeyOf(date) : null,
         theme: theme.name,
       };
     });
+}
+
+
+/* =========================================================================
+   DATA QUALITY: destinations and follow-up flags
+   ========================================================================= */
+// The "Referred to Another Office" column also holds the word DONE and free-text
+// notes. DONE is a workflow marker, not an office, so it is never a destination.
+function cleanDestination(raw) {
+  const s = (raw || "").replace(/\s+/g, " ").trim();
+  if (!s || /^done\.?$/i.test(s)) return "";
+  return s;
+}
+
+const STALE_DAYS = 14;
+const FLAGS = [
+  { id: "no-status",      label: "Status missing or still \u201cNew\u201d",           hint: "Counted as In Progress until a status is set." },
+  { id: "ip-resolved",    label: "In Progress, but a resolution is written",       hint: "Probably finished; the status was never updated." },
+  { id: "stale",          label: `In Progress for ${STALE_DAYS}+ days`,            hint: "Open longer than two weeks." },
+  { id: "no-resolution",  label: "Resolved without a resolution note",             hint: "Nothing recorded about how it was handled." },
+  { id: "no-destination", label: "Transferred without a destination",              hint: "The receiving office is not recorded." },
+];
+function addFlags(r) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const ageDays = r.date ? Math.floor((today - r.date) / 86400000) : null;
+  const f = [];
+  if (!r.rawStatus || /^new\b/i.test(r.rawStatus)) f.push("no-status");
+  if (r.status === "In Progress" && r.resolution.trim().length >= 15) f.push("ip-resolved");
+  if (r.status === "In Progress" && ageDays != null && ageDays >= STALE_DAYS) f.push("stale");
+  if (r.status === "Resolved" && r.resolution.trim().length < 8) f.push("no-resolution");
+  if (r.status === "Transferred" && !cleanDestination(r.destination)) f.push("no-destination");
+  r.flags = f;
+  r.ageDays = ageDays;
+  return r;
 }
 
 /* =========================================================================
@@ -261,18 +301,34 @@ function renderOverallStats() {
   const resolved = all.filter(r => r.status === "Resolved").length;
   const transferred = all.filter(r => r.status === "Transferred").length;
   const inProgress = all.filter(r => r.status === "In Progress").length;
+  const stale = all.filter(r => r.flags.includes("stale")).length;
   const c = document.getElementById("overall-stats");
   renderStatTile(c, "handled", total, `All-time record count`, "flat");
-  renderStatTile(c, "resolved", resolved, `▲ ${pct(resolved, total)}% of total`, "up");
+  renderStatTile(c, "resolved", resolved, `${pct(resolved, total)}% of total`, "flat");
   renderStatTile(c, "transferred", transferred, `${pct(transferred, total)}% of total`, "flat");
-  renderStatTile(c, "inprogress", inProgress, `${pct(inProgress, total)}% of total`, inProgress > 0 ? "down" : "flat");
+  renderStatTile(c, "inprogress", inProgress, `${pct(inProgress, total)}% of total${stale ? ` · ${fmtNum(stale)} open ${STALE_DAYS}+ days` : ""}`, stale ? "warn" : "flat");
 }
+
+function calPrevKey(key) {
+  const [y, m] = key.split("-").map(Number);
+  return monthKeyOf(new Date(y, m - 2, 1));
+}
+// The current calendar month is incomplete until its last day.
+function partialInfo(key) {
+  const now = new Date();
+  if (monthKeyOf(now) !== key) return null;
+  const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return now.getDate() < last ? { day: now.getDate(), last } : null;
+}
+const monthShort = key => MONTH_NAMES[+key.split("-")[1] - 1].slice(0, 3);
 
 function renderMonthStats() {
   const key = state.selectedMonth;
   const c = document.getElementById("month-stats");
+  const noteEl = document.getElementById("month-note");
   if (!key) {
     ["handled","resolved","transferred","inprogress"].forEach(s => renderStatTile(c, s, 0, "No data", "flat"));
+    noteEl.textContent = "";
     return;
   }
   const rows = state.records.filter(r => r.monthKey === key);
@@ -280,22 +336,32 @@ function renderMonthStats() {
   const resolved = rows.filter(r => r.status === "Resolved").length;
   const transferred = rows.filter(r => r.status === "Transferred").length;
   const inProgress = rows.filter(r => r.status === "In Progress").length;
+  const stale = rows.filter(r => r.flags.includes("stale")).length;
 
-  const prevKey = prevMonthKey(key);
-  const prevTotal = prevKey ? state.records.filter(r => r.monthKey === prevKey).length : null;
-
-  let handledDelta = "First month on record", handledClass = "flat";
-  if (prevTotal !== null) {
-    const diff = pct(total - prevTotal, prevTotal || 1);
-    if (total > prevTotal) { handledDelta = `▲ ${Math.abs(diff)}% vs last month`; handledClass = "up"; }
-    else if (total < prevTotal) { handledDelta = `▼ ${Math.abs(diff)}% vs last month`; handledClass = "down"; }
-    else { handledDelta = `No change vs last month`; handledClass = "flat"; }
+  // compare with the previous calendar month, over the same days while this one is still running
+  const partial = partialInfo(key);
+  const prevKey = calPrevKey(key);
+  const prevAll = state.records.filter(r => r.monthKey === prevKey);
+  const prevRows = partial ? prevAll.filter(r => r.day != null && r.day <= partial.day) : prevAll;
+  let handledDelta;
+  if (!prevAll.length) {
+    handledDelta = `No data for ${monthLabelOf(prevKey)}`;
+  } else {
+    const basis = partial ? `vs ${monthShort(prevKey)} 1\u2013${partial.day}` : `vs ${monthShort(prevKey)}`;
+    const diff = pct(total - prevRows.length, prevRows.length || 1);
+    const arrow = total > prevRows.length ? "\u25B2 " : total < prevRows.length ? "\u25BC " : "";
+    handledDelta = total === prevRows.length ? `No change ${basis}` : `${arrow}${Math.abs(diff)}% ${basis}`;
+    if (prevRows.length < 30) handledDelta += " \u00B7 small base";
   }
 
-  renderStatTile(c, "handled", total, handledDelta, handledClass);
-  renderStatTile(c, "resolved", resolved, `${pct(resolved, total)}% resolution rate`, "up");
+  renderStatTile(c, "handled", total, handledDelta, "flat");
+  renderStatTile(c, "resolved", resolved, `${pct(resolved, total)}% resolution rate`, "flat");
   renderStatTile(c, "transferred", transferred, `${pct(transferred, total)}% of month`, "flat");
-  renderStatTile(c, "inprogress", inProgress, `${pct(inProgress, total)}% of month`, inProgress > 0 ? "down" : "flat");
+  renderStatTile(c, "inprogress", inProgress, `${pct(inProgress, total)}% of month${stale ? ` \u00B7 ${stale} open ${STALE_DAYS}+ days` : ""}`, stale ? "warn" : "flat");
+
+  noteEl.textContent = partial
+    ? `Month to date (1\u2013${partial.day} ${MONTH_NAMES[+key.split("-")[1] - 1]}). The comparison uses the same days of the previous month.`
+    : total < 30 ? `Low-volume month (${total} queries): percentages swing widely with a few records.` : "";
 }
 
 /* =========================================================================
@@ -306,6 +372,90 @@ function renderMonthSelect() {
   sel.innerHTML = state.months.map(m =>
     `<option value="${m.key}" ${m.key === state.selectedMonth ? "selected" : ""}>${m.label}</option>`
   ).join("");
+}
+
+/* =========================================================================
+   RENDER: monthly volume trend
+   ========================================================================= */
+function renderTrend() {
+  const wrap = document.getElementById("trend-chart");
+  const withDate = state.records.filter(r => r.monthKey);
+  if (!withDate.length) { wrap.innerHTML = emptyNote("No dated records yet."); return; }
+  const keys = [];
+  const first = withDate.reduce((a, r) => (r.monthKey < a ? r.monthKey : a), withDate[0].monthKey);
+  const last = withDate.reduce((a, r) => (r.monthKey > a ? r.monthKey : a), withDate[0].monthKey);
+  for (let [y, m] = first.split("-").map(Number); `${y}-${String(m).padStart(2, "0")}` <= last; m === 12 ? (y++, m = 1) : m++) {
+    keys.push(`${y}-${String(m).padStart(2, "0")}`);
+  }
+  const stats = keys.map(k => {
+    const rows = withDate.filter(r => r.monthKey === k);
+    return { key: k, total: rows.length,
+      resolved: rows.filter(r => r.status === "Resolved").length,
+      transferred: rows.filter(r => r.status === "Transferred").length,
+      inProgress: rows.filter(r => r.status === "In Progress").length,
+      partial: !!partialInfo(k) };
+  });
+  const max = Math.max(...stats.map(x => x.total), 1);
+  wrap.innerHTML = stats.map(x => {
+    const h = x.total ? Math.max(x.total / max, 0.02) : 0;
+    const sel = x.key === state.selectedMonth;
+    const tip = `${monthLabelOf(x.key)}${x.partial ? " (month to date)" : ""}: ${x.total} queries \u2014 ${x.resolved} resolved, ${x.transferred} transferred, ${x.inProgress} in progress`;
+    return `<button type="button" class="trend-col${sel ? " selected" : ""}" data-month="${x.key}" aria-pressed="${sel}" aria-label="${escapeAttr(tip)}">
+      <span class="trend-plot">
+        <span class="trend-value">${fmtNum(x.total)}</span>
+        <span class="trend-bar${x.partial ? " partial" : ""}" style="--h:${h.toFixed(4)}" data-tooltip="${escapeAttr(tip)}"></span>
+      </span>
+      <span class="trend-label">${monthShort(x.key)}${x.partial ? "<small>MTD</small>" : ""}</span>
+    </button>`;
+  }).join("");
+  wrap.querySelectorAll(".trend-bar").forEach(bar => {
+    bar.addEventListener("mouseenter", showBarTooltip);
+    bar.addEventListener("mousemove", showBarTooltip);
+    bar.addEventListener("mouseleave", hideBarTooltip);
+  });
+  wrap.querySelectorAll(".trend-col").forEach(col => {
+    col.addEventListener("click", () => {
+      const sel = document.getElementById("month-select");
+      sel.value = col.dataset.month;
+      sel.dispatchEvent(new Event("change"));
+    });
+  });
+  document.getElementById("trend-table-body").innerHTML = stats.map(x =>
+    `<tr><td>${monthLabelOf(x.key)}${x.partial ? " (to date)" : ""}</td><td class="num">${x.total}</td><td class="num">${x.resolved}</td><td class="num">${x.transferred}</td><td class="num">${x.inProgress}</td><td class="num">${pct(x.inProgress, x.total)}%</td></tr>`
+  ).join("");
+}
+
+/* =========================================================================
+   RENDER: records needing follow-up
+   ========================================================================= */
+function renderFollowUp() {
+  const key = state.selectedMonth;
+  const monthRows = state.records.filter(r => !key || r.monthKey === key);
+  const label = key ? monthLabelOf(key) : "all time";
+  document.getElementById("followup-title").textContent = `Records Needing Follow-up in ${label}`;
+  const total = FLAGS.reduce((a, f) => a + monthRows.filter(r => r.flags.includes(f.id)).length, 0);
+  document.getElementById("followup-list").innerHTML = FLAGS.map(f => {
+    const n = monthRows.filter(r => r.flags.includes(f.id)).length;
+    const all = state.records.filter(r => r.flags.includes(f.id)).length;
+    return `<li class="followup-row${n ? "" : " is-clear"}">
+      <span class="followup-text"><strong>${escapeHTML(f.label)}</strong><span class="followup-hint">${escapeHTML(f.hint)} All time: ${fmtNum(all)}.</span></span>
+      <span class="followup-count num">${n ? fmtNum(n) : "None"}</span>
+      ${n ? `<button type="button" class="secondary-btn" data-flag="${f.id}">Review</button>` : `<span class="followup-spacer"></span>`}
+    </li>`;
+  }).join("");
+  document.getElementById("followup-summary").textContent = total
+    ? `${fmtNum(total)} flag${total === 1 ? "" : "s"} in ${label}. These records can make statuses and rates look different from what actually happened.`
+    : `No flags in ${label}.`;
+  document.querySelectorAll("#followup-list [data-flag]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.flagFilter = btn.dataset.flag;
+      state.statusFilter.clear(); state.themeFilter.clear(); state.activeThemeBar = null;
+      state.searchText = ""; document.getElementById("search-input").value = "";
+      state.page = 1;
+      renderFilterChips(); renderThemeChart(); renderAuditTable();
+      document.getElementById("audit-body").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 }
 
 /* =========================================================================
@@ -399,6 +549,21 @@ function renderFilterChips() {
     });
   });
 
+  const flagWrap = document.getElementById("flag-chips");
+  flagWrap.innerHTML = FLAGS.map(f => {
+    const count = monthRows.filter(r => r.flags.includes(f.id)).length;
+    const selected = state.flagFilter === f.id;
+    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-flag="${f.id}" title="${escapeAttr(f.hint)}">${escapeHTML(f.label)} <span class="count">${count}</span></button>`;
+  }).join("");
+  flagWrap.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      state.flagFilter = state.flagFilter === chip.dataset.flag ? null : chip.dataset.flag;
+      state.page = 1;
+      renderFilterChips();
+      renderAuditTable();
+    });
+  });
+
   const themeCounts = countBy(monthRows, "theme");
   const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
   const themeWrap = document.getElementById("theme-chips");
@@ -429,15 +594,17 @@ function getFilteredRows() {
   let rows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
   if (state.statusFilter.size) rows = rows.filter(r => state.statusFilter.has(r.status));
   if (state.themeFilter.size) rows = rows.filter(r => state.themeFilter.has(r.theme));
+  if (state.flagFilter) rows = rows.filter(r => r.flags.includes(state.flagFilter));
   if (state.searchText) {
     const q = state.searchText.toLowerCase();
     rows = rows.filter(r => r.description.toLowerCase().includes(q) || r.resolution.toLowerCase().includes(q));
   }
   if (state.sortKey) {
     rows = [...rows].sort((a, b) => {
-      const av = (a[state.sortKey] || "").toString().toLowerCase();
-      const bv = (b[state.sortKey] || "").toString().toLowerCase();
-      return av < bv ? -1 * state.sortDir : av > bv ? 1 * state.sortDir : 0;
+      // numeric-aware, so 20261009-2 sorts before 20261009-10
+      const av = (a[state.sortKey] || "").toString();
+      const bv = (b[state.sortKey] || "").toString();
+      return av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" }) * state.sortDir;
     });
   }
   return rows;
@@ -534,13 +701,29 @@ function renderDestinationTable() {
   const monthLabel = state.selectedMonth ? monthLabelOf(state.selectedMonth) : "all time";
   document.getElementById("dest-title").textContent = `Referred Destination Breakdown for ${monthLabel}`;
 
-  const rows = state.records.filter(r => r.destination && (!state.selectedMonth || r.monthKey === state.selectedMonth));
-  const counts = countBy(rows, "destination");
-  const entries = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  // only transferred concerns have a destination; DONE and free-text notes are not offices
+  const rows = state.records.filter(r => r.status === "Transferred" && (!state.selectedMonth || r.monthKey === state.selectedMonth));
+  const groups = new Map();
+  let notes = 0, missing = 0;
+  for (const r of rows) {
+    const d = cleanDestination(r.destination);
+    if (!d) { missing++; continue; }
+    if (d.split(" ").length >= 5) { notes++; continue; }
+    const k = d.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const g = groups.get(k) || { count: 0, spellings: new Map() };
+    g.count++; g.spellings.set(d, (g.spellings.get(d) || 0) + 1);
+    groups.set(k, g);
+  }
+  const entries = [...groups.values()]
+    .map(g => [[...g.spellings.entries()].sort((a, b) => b[1] - a[1])[0][0], g.count])
+    .sort((a, b) => b[1] - a[1]);
   const wrap = document.getElementById("dest-chips");
-  wrap.innerHTML = entries.length
-    ? entries.map(([dest, count]) => `<span class="chip chip-static">${escapeHTML(dest)} <span class="count">${count}</span></span>`).join("")
-    : emptyNote("No referred-destination data for this month.");
+  let html = entries.map(([dest, count]) => `<span class="chip chip-static">${escapeHTML(dest)} <span class="count">${count}</span></span>`).join("");
+  if (notes) html += `<span class="chip chip-static">Free-text notes <span class="count">${notes}</span></span>`;
+  if (missing) html += `<span class="chip chip-static chip-gap" title="Transferred, but no destination was recorded">No destination recorded <span class="count">${missing}</span></span>`;
+  wrap.innerHTML = rows.length
+    ? html + `<p class="card-hint dest-note">Counts transferred concerns only (${rows.length} in ${escapeHTML(monthLabel)}). \u201cDONE\u201d entries and notes on resolved concerns are not destinations. Spellings that differ only by case or punctuation are merged.</p>`
+    : emptyNote("No transferred concerns for this month.");
 }
 
 /* =========================================================================
@@ -548,10 +731,15 @@ function renderDestinationTable() {
    ========================================================================= */
 function exportFilteredCSV() {
   const rows = getFilteredRows();
-  const headers = ["Queue Number", "Identified Theme", "Description", "Concern Status", "Resolution", "Referred To"];
-  const csvEscape = v => `"${(v || "").toString().replace(/"/g, '""')}"`;
+  const headers = ["Queue Number", "Identified Theme", "Description", "Concern Status", "Resolution", "Referred To", "Follow-up Flags"];
+  // a leading = + - @ would be run as a formula when the file is opened in a spreadsheet
+  const csvEscape = v => {
+    let t = (v || "").toString();
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+    return `"${t.replace(/"/g, '""')}"`;
+  };
   const lines = [headers.join(",")].concat(
-    rows.map(r => [r.queueNumber, r.theme, r.description, r.status, r.resolution, r.destination].map(csvEscape).join(","))
+    rows.map(r => [r.queueNumber, r.theme, r.description, r.status, r.resolution, r.destination, r.flags.map(id => FLAGS.find(f => f.id === id).label).join("; ")].map(csvEscape).join(","))
   );
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -570,6 +758,8 @@ function renderAll() {
   renderOverallStats();
   renderMonthSelect();
   renderMonthStats();
+  renderTrend();
+  renderFollowUp();
   renderThemeChart();
   renderFilterChips();
   renderAuditTable();
@@ -585,7 +775,10 @@ function wireEvents() {
     state.page = 1;
     state.activeThemeBar = null;
     state.themeFilter.clear();
+    state.flagFilter = null;
     renderMonthStats();
+    renderTrend();
+    renderFollowUp();
     renderThemeChart();
     renderFilterChips();
     renderAuditTable();
@@ -601,6 +794,7 @@ function wireEvents() {
   document.getElementById("clear-filters-btn").addEventListener("click", () => {
     state.statusFilter.clear();
     state.themeFilter.clear();
+    state.flagFilter = null;
     state.activeThemeBar = null;
     state.searchText = "";
     document.getElementById("search-input").value = "";

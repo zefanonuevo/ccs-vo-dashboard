@@ -66,6 +66,49 @@ header, segmented tabs, and a System / Light / Dark theme switch in the header
 The pages need a network connection to load the shared stylesheet (they already need
 one for the Google Sheets data).
 
+## Versions and restoring
+
+Every release is a git tag (`v1.0.0`, `v2.0.0`, `v2.0.1`, `v2.1.0`, ...) with a
+GitHub Release, and [CHANGELOG.md](CHANGELOG.md) says what changed in each. The
+version is also shown in the footer of every page.
+
+| Version | What it is |
+|---|---|
+| `v1.0.0` | The original dashboard, before the shared design system |
+| `v2.0.0` | macOS-style redesign on the shared `ccs-design` tokens |
+| `v2.0.1` | Mobile fixes |
+| `v2.1.0` | Analyst review: data checks, follow-up flags, trend chart, evaluation coverage |
+
+**Look at an old version.** Open `https://github.com/zefanonuevo/ccs-vo-dashboard/tree/v1.0.0`
+(swap in any tag), or download its zip from the Releases page.
+
+**Run an old version on your computer.**
+```bash
+git clone https://github.com/zefanonuevo/ccs-vo-dashboard.git
+cd ccs-vo-dashboard
+git checkout v1.0.0
+python3 -m http.server 8080      # then open http://localhost:8080
+```
+
+**Put an old version back on the live site.** This keeps the history, so you can
+go forward again:
+```bash
+git checkout claude/google-sheets-dashboard-7fqk8c
+git checkout v1.0.0 -- .          # copy that version's files over the current ones
+git commit -m "Restore v1.0.0"
+git push
+```
+GitHub Pages republishes in a minute or two. To go back to the newest version,
+restore the latest tag the same way.
+
+Only the **code and design** are versioned. The numbers always come live from the
+Google Sheets, so an old version shows today's data. The shared design stylesheet
+(`ccs-design`) is a separate repo; it is loaded with a `?v=` number that is part of
+each version's HTML, so an old version keeps asking for the stylesheet it was built with.
+
+To release a new version: update `VERSION` in `assets/shell.js` and add an entry to
+`CHANGELOG.md`, commit, then `git tag -a vX.Y.Z -m "..."` and `git push --tags`.
+
 ## Login gate
 
 Two separate pages:

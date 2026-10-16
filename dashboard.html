@@ -111,8 +111,25 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
             <span class="stat-delta"></span>
           </div>
         </div>
+        <p class="kpi-note" id="month-note"></p>
       </section>
     </div>
+
+    <section class="card" id="trend-card">
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M3 17h2v-6H3v6Zm4 0h2V7H7v10Zm4 0h2v-4h-2v4Zm4 0h2V4h-2v13Zm4 0h2v-8h-2v8ZM3 20h18v2H3v-2Z" fill="currentColor"/></svg>Monthly Volume</h2>
+      <p class="card-hint">Queries logged each month. Click a month to review it below. The current month is incomplete (MTD).</p>
+      <div class="trend" id="trend-chart"></div>
+      <details class="trend-table">
+        <summary>View as table</summary>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Month</th><th>Queries</th><th>Resolved</th><th>Transferred</th><th>In Progress</th><th>In Progress %</th></tr></thead><tbody id="trend-table-body"></tbody></table></div>
+      </details>
+    </section>
+
+    <section class="card" id="followup-card">
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2 1 21h22L12 2Zm1 14h-2v-2h2v2Zm0-4h-2V8h2v4Z" fill="currentColor"/></svg><span id="followup-title">Records Needing Follow-up</span></h2>
+      <p class="card-hint" id="followup-summary"></p>
+      <ul class="followup" id="followup-list"></ul>
+    </section>
 
     <section class="card">
       <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5L20.49 19l-5-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z" fill="currentColor"/></svg><span id="theme-chart-title">What Were Clients Inquiring About?</span></h2>
@@ -138,6 +155,10 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
               <span class="filter-label">Filter by Identified Topic Theme:</span>
               <div class="chip-row" id="theme-chips"></div>
             </div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Filter by Follow-up Flag:</span>
+            <div class="chip-row" id="flag-chips"></div>
           </div>
           <div class="filter-group search-group">
             <input type="search" id="search-input" placeholder="Search within Description or Resolution&hellip;">
@@ -174,9 +195,11 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 </main>
 
+<footer class="app-footer">CCS Virtual Office Dashboard · <span data-version></span> · <a href="https://github.com/zefanonuevo/ccs-vo-dashboard/blob/claude/google-sheets-dashboard-7fqk8c/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Version history</a></footer>
+
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/shell.js?v=1"></script>
-<script src="assets/app.js?v=14"></script>
+<script src="assets/app.js?v=15"></script>
 </body>
 </html>

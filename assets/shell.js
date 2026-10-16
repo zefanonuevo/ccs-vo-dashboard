@@ -2,6 +2,8 @@
    (same key and markup as the other CCS sites) and the tab strip. */
 (function () {
   "use strict";
+  // single source of truth for the version shown in every page footer; keep in step with CHANGELOG.md
+  var VERSION = "2.1.0";
   var KEY = "ccs-theme", LEGACY = "ccs-vo-theme", root = document.documentElement;
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -26,6 +28,7 @@
     });
   }
   function init() {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-version]"), function (e) { e.textContent = "v" + VERSION; });
     apply(mode());
     var box = document.getElementById("theme");
     if (box) box.addEventListener("click", function (e) {

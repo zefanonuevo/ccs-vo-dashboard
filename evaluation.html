@@ -120,11 +120,24 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
     </div>
   </section>
 
+  <section class="card" id="gap-card" hidden>
+    <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2 1 21h22L12 2Zm1 14h-2v-2h2v2Zm0-4h-2V8h2v4Z" fill="currentColor"/></svg>Closed in the Log, Open for the Client</h2>
+    <p class="card-hint" id="gap-summary"></p>
+    <details class="gap-details">
+      <summary>Show the queue numbers</summary>
+      <div class="gap-list" id="gap-list"></div>
+    </details>
+  </section>
+
   <section class="card">
     <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 16a6 6 0 1 1 6-6 6 6 0 0 1-6 6Zm0-9a3 3 0 1 0 3 3 3 3 0 0 0-3-3Z" fill="currentColor"/></svg><span id="quality-title">Service Quality Breakdown</span></h2>
     <p class="card-hint">Ratings across the four service dimensions clients scored after every visit.</p>
     <div id="quality-bars"></div>
     <div class="quality-legend" id="quality-legend"></div>
+      <details class="quality-table">
+        <summary>View as table</summary>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Dimension</th><th>Excellent</th><th>Good</th><th>Fair</th><th>Poor</th><th>Very Poor</th><th>Responses</th></tr></thead><tbody id="quality-table-body"></tbody></table></div>
+      </details>
   </section>
 
   <div class="two-col-row">
@@ -175,9 +188,11 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 
 </main>
 
+<footer class="app-footer">CCS Virtual Office Dashboard · <span data-version></span> · <a href="https://github.com/zefanonuevo/ccs-vo-dashboard/blob/claude/google-sheets-dashboard-7fqk8c/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Version history</a></footer>
+
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/shell.js?v=1"></script>
-<script src="assets/evaluation.js?v=4"></script>
+<script src="assets/evaluation.js?v=5"></script>
 </body>
 </html>
