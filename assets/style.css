@@ -976,6 +976,10 @@ button, [role=tab], .chip, .tab { -webkit-tap-highlight-color: transparent; touc
 .quality-table summary { cursor: pointer; color: var(--accent); font-size: var(--fs-sm); font-weight: 600; padding: 4px 0; margin-top: 12px; }
 .quality-table .table-scroll { margin-top: 8px; }
 
+#sub-chart .chart-row { grid-template-columns: 280px minmax(0, 1fr) 60px; }
+@media (max-width: 860px) { #sub-chart .chart-row { grid-template-columns: 200px minmax(0, 1fr) 50px; } }
+.sub-tag { margin-top: 4px; font-size: var(--fs-xs); color: var(--text-muted); }
+
 /* touch: larger targets, same layout (the info dot grows its hit area only) */
 @media (pointer: coarse) {
   .link-btn, .expand-btn { min-height: 36px; }

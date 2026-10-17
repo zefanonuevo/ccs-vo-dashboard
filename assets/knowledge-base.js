@@ -8,25 +8,8 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBdVhjxW5btyVG
 const PAGE_SIZE = 10;
 const QUICK_TOPIC_COUNT = 6;
 
-const THEME_DEFS = [
-  { name: "Thesis & Capstone", color: "var(--series-7)",
-    patterns: [/\bthesis\b/, /\bcapstone\b/, /\bdissertation\b/, /\bdefense\b/, /\bproposal\b/, /\bccs999/, /writing\s*[123]\b/] },
-  { name: "Practicum & Internship", color: "var(--series-3)",
-    patterns: [/\bpracticum\b/, /\bojt\b/, /\bintern(ship)?\b/, /\bprct/, /\bprc-/, /\bprcie/, /\bprcne/, /\bprcis/, /\bmoa\b/, /\biom\b/, /\bhte\b/] },
-  { name: "Shifting & Program Change", color: "var(--series-8)",
-    patterns: [/\bshift(ing|ed|s)?\b/, /change\s+of\s+program/] },
-  { name: "Grades & Academic Standing", color: "var(--series-5)",
-    patterns: [/\bgrade[sd]?\b/, /\bgwa\b/, /\bfail(ed|ing)?\b/, /\bretake\b/, /academic\s+(standing|probation)/, /dean.?s\s+list/, /\bcog\b/, /\btor\b/] },
-  { name: "Leave of Absence / Returnee", color: "var(--series-2)",
-    patterns: [/\bloa\b/, /leave of absence/, /\breturnee\b/] },
-  { name: "Fees & Payment", color: "var(--series-4)",
-    patterns: [/\bfee[s]?\b/, /\bpayment\b/, /\bmisc\b/, /\btuition\b/, /\brefund\b/, /\bassessment\b/, /\bbilling\b/] },
-  { name: "Curriculum & Degree Program", color: "var(--series-6)",
-    patterns: [/\bcurriculum\b/, /course mapping/, /\bderf\b/, /study plan/, /\bflowchart\b/, /\bminor\b/, /program eligib/] },
-  { name: "Enrollment & Enlistment", color: "var(--series-1)",
-    patterns: [/\benlist/, /\benroll/, /archer/, /\bah\b/, /add.?drop/, /\badd(ing|ed)?\b/, /\bdrop(ping|ped)?\b/, /\bsection[s]?\b/, /\bslot[s]?\b/, /\bconfirm/, /\bclass(es)?\b/, /\bcourse[s]?\b/, /\boffering\b/, /\bresidency\b/, /\belective[s]?\b/, /special class/, /\bcredit(ing|ed)?\b/, /\bpetition/, /\bsubject[s]?\b/] },
-];
-const OTHER_THEME = { name: "General Inquiries / Others", color: "var(--series-other)" };
+
+const { THEME_DEFS, OTHER_THEME, ENROLLMENT, SUB_DEFS, OTHER_SUB, classifyTheme, classifySub, themeColor, cleanDestination } = window.VO_CLASSIFY;
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -42,6 +25,7 @@ const state = {
   entries: [],
   searchText: "",
   themeFilter: new Set(),
+  subFilter: new Set(),
   page: 1,
 };
 
@@ -88,21 +72,6 @@ function parseCSV(text) {
 /* =========================================================================
    CLASSIFICATION & TRANSFORM
    ========================================================================= */
-function classifyTheme(description) {
-  const d = (description || "").toLowerCase();
-  for (const t of THEME_DEFS) {
-    for (const p of t.patterns) {
-      if (p.test(d)) return t;
-    }
-  }
-  return OTHER_THEME;
-}
-
-function themeColor(name) {
-  const t = THEME_DEFS.find(t => t.name === name);
-  return t ? t.color : OTHER_THEME.color;
-}
-
 function normalizeStatus(raw) {
   const s = (raw || "").trim().toLowerCase();
   if (s.startsWith("resolved")) return "Resolved";
@@ -142,9 +111,10 @@ function buildEntries(rawRows) {
         description,
         resolution,
         status,
-        destination: (r["Referred to Another Office"] || "").trim(),
+        destination: cleanDestination(r["Referred to Another Office"]),
         date,
         theme: theme.name,
+        subTheme: theme.name === ENROLLMENT ? classifySub(description) : "",
       };
     })
     .filter(e => (e.status === "Resolved" || e.status === "Transferred")
@@ -279,7 +249,30 @@ function truncate(s, n) {
 /* =========================================================================
    RENDER: theme filter chips
    ========================================================================= */
+function renderSubChips() {
+  const group = document.getElementById("kb-sub-group");
+  const show = state.themeFilter.has(ENROLLMENT);
+  group.hidden = !show;
+  if (!show) return;
+  const counts = countBy(state.entries.filter(e => e.theme === ENROLLMENT), "subTheme");
+  const wrap = document.getElementById("kb-sub-chips");
+  wrap.innerHTML = [...SUB_DEFS.map(x => x.name), OTHER_SUB].filter(n => counts.get(n)).map(n => {
+    const selected = state.subFilter.has(n);
+    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-sub="${escapeAttr(n)}">${escapeHTML(n)} <span class="count">${counts.get(n)}</span></button>`;
+  }).join("");
+  wrap.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const n = chip.dataset.sub;
+      state.subFilter.has(n) ? state.subFilter.delete(n) : state.subFilter.add(n);
+      state.page = 1;
+      renderSubChips();
+      renderResults();
+    });
+  });
+}
+
 function renderThemeChips() {
+  renderSubChips();
   const themeCounts = countBy(state.entries, "theme");
   const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
   const wrap = document.getElementById("kb-theme-chips");
@@ -294,6 +287,7 @@ function renderThemeChips() {
     chip.addEventListener("click", () => {
       const t = chip.dataset.theme;
       state.themeFilter.has(t) ? state.themeFilter.delete(t) : state.themeFilter.add(t);
+      if (!state.themeFilter.has(ENROLLMENT)) state.subFilter.clear();
       state.page = 1;
       renderThemeChips();
       renderResults();
@@ -307,6 +301,7 @@ function renderThemeChips() {
 function getFilteredEntries() {
   let rows = state.entries;
   if (state.themeFilter.size) rows = rows.filter(e => state.themeFilter.has(e.theme));
+  if (state.subFilter.size) rows = rows.filter(e => state.subFilter.has(e.subTheme));
   if (state.searchText) {
     const q = state.searchText.toLowerCase();
     rows = rows.filter(e => e.description.toLowerCase().includes(q) || e.resolution.toLowerCase().includes(q));
@@ -335,6 +330,7 @@ function renderResults() {
       <article class="kb-card">
         <div class="kb-card-head">
           <span class="theme-tag"><span class="dot" style="background:${themeColor(e.theme)}"></span>${escapeHTML(e.theme)}</span>
+          ${e.subTheme ? `<span class="chip chip-static">${escapeHTML(e.subTheme)}</span>` : ""}
           <span class="status-tag ${statusClass}">${e.status}</span>
           ${e.destination ? `<span class="chip chip-static">Routed to: ${escapeHTML(e.destination)}</span>` : ""}
           <span class="kb-ref">Ref: ${ref}</span>
@@ -390,6 +386,7 @@ function wireEvents() {
 
   document.getElementById("kb-clear-btn").addEventListener("click", () => {
     state.themeFilter.clear();
+    state.subFilter.clear();
     state.searchText = "";
     document.getElementById("kb-search-input").value = "";
     state.page = 1;

@@ -7,25 +7,8 @@
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSBdVhjxW5btyVGFw5H2HS52JhLDkACu1EY7un_57jtWcgVmYVFPyTj647pRv6fKyw33ID3YIzcoozK/pub?gid=0&single=true&output=csv";
 const PAGE_SIZE = 15;
 
-const THEME_DEFS = [
-  { name: "Thesis & Capstone", color: "var(--series-7)",
-    patterns: [/\bthesis\b/, /\bcapstone\b/, /\bdissertation\b/, /\bdefense\b/, /\bproposal\b/, /\bccs999/, /writing\s*[123]\b/] },
-  { name: "Practicum & Internship", color: "var(--series-3)",
-    patterns: [/\bpracticum\b/, /\bojt\b/, /\bintern(ship)?\b/, /\bprct/, /\bprc-/, /\bprcie/, /\bprcne/, /\bprcis/, /\bmoa\b/, /\biom\b/, /\bhte\b/] },
-  { name: "Shifting & Program Change", color: "var(--series-8)",
-    patterns: [/\bshift(ing|ed|s)?\b/, /change\s+of\s+program/] },
-  { name: "Grades & Academic Standing", color: "var(--series-5)",
-    patterns: [/\bgrade[sd]?\b/, /\bgwa\b/, /\bfail(ed|ing)?\b/, /\bretake\b/, /academic\s+(standing|probation)/, /dean.?s\s+list/, /\bcog\b/, /\btor\b/] },
-  { name: "Leave of Absence / Returnee", color: "var(--series-2)",
-    patterns: [/\bloa\b/, /leave of absence/, /\breturnee\b/] },
-  { name: "Fees & Payment", color: "var(--series-4)",
-    patterns: [/\bfee[s]?\b/, /\bpayment\b/, /\bmisc\b/, /\btuition\b/, /\brefund\b/, /\bassessment\b/, /\bbilling\b/] },
-  { name: "Curriculum & Degree Program", color: "var(--series-6)",
-    patterns: [/\bcurriculum\b/, /course mapping/, /\bderf\b/, /study plan/, /\bflowchart\b/, /\bminor\b/, /program eligib/] },
-  { name: "Enrollment & Enlistment", color: "var(--series-1)",
-    patterns: [/\benlist/, /\benroll/, /archer/, /\bah\b/, /add.?drop/, /\badd(ing|ed)?\b/, /\bdrop(ping|ped)?\b/, /\bsection[s]?\b/, /\bslot[s]?\b/, /\bconfirm/, /\bclass(es)?\b/, /\bcourse[s]?\b/, /\boffering\b/, /\bresidency\b/, /\belective[s]?\b/, /special class/, /\bcredit(ing|ed)?\b/, /\bpetition/, /\bsubject[s]?\b/] },
-];
-const OTHER_THEME = { name: "General Inquiries / Others", color: "var(--series-other)" };
+
+const { THEME_DEFS, OTHER_THEME, ENROLLMENT, SUB_DEFS, OTHER_SUB, classifyTheme, classifySub, themeColor, cleanDestination } = window.VO_CLASSIFY;
 
 const STATUS_ORDER = ["Resolved", "Transferred", "In Progress"];
 const STATUS_META = {
@@ -54,6 +37,7 @@ const state = {
   page: 1,
   activeThemeBar: null, // theme clicked in chart (separate quick-filter)
   flagFilter: null,     // follow-up flag id, or null
+  subFilter: new Set(), // Enrollment sub-topics
 };
 
 /* =========================================================================
@@ -99,21 +83,6 @@ function parseCSV(text) {
 /* =========================================================================
    CLASSIFICATION & TRANSFORM
    ========================================================================= */
-function classifyTheme(description) {
-  const d = (description || "").toLowerCase();
-  for (const t of THEME_DEFS) {
-    for (const p of t.patterns) {
-      if (p.test(d)) return t;
-    }
-  }
-  return OTHER_THEME;
-}
-
-function themeColor(name) {
-  const t = THEME_DEFS.find(t => t.name === name);
-  return t ? t.color : OTHER_THEME.color;
-}
-
 function normalizeStatus(raw) {
   const s = (raw || "").trim().toLowerCase();
   if (s.startsWith("resolved")) return "Resolved";
@@ -147,6 +116,7 @@ function buildRecordsRaw(rawRows) {
     .map(r => {
       const date = parseQueueDate(r["Queue Number"]);
       const theme = classifyTheme(r["Brief Description of Concern or Inquiry"]);
+      const subTheme = theme.name === ENROLLMENT ? classifySub(r["Brief Description of Concern or Inquiry"]) : "";
       const status = normalizeStatus(r["Concern Status"]);
       const destination = (r["Referred to Another Office"] || "").trim();
       return {
@@ -162,6 +132,7 @@ function buildRecordsRaw(rawRows) {
         day: date ? date.getDate() : null,
         monthKey: date ? monthKeyOf(date) : null,
         theme: theme.name,
+        subTheme,
       };
     });
 }
@@ -170,14 +141,6 @@ function buildRecordsRaw(rawRows) {
 /* =========================================================================
    DATA QUALITY: destinations and follow-up flags
    ========================================================================= */
-// The "Referred to Another Office" column also holds the word DONE and free-text
-// notes. DONE is a workflow marker, not an office, so it is never a destination.
-function cleanDestination(raw) {
-  const s = (raw || "").replace(/\s+/g, " ").trim();
-  if (!s || /^done\.?$/i.test(s)) return "";
-  return s;
-}
-
 const STALE_DAYS = 14;
 const FLAGS = [
   { id: "no-status",      label: "Status missing or still \u201cNew\u201d",           hint: "Counted as In Progress until a status is set." },
@@ -498,9 +461,11 @@ function renderThemeChart() {
       const theme = bar.dataset.themeBar;
       state.activeThemeBar = state.activeThemeBar === theme ? null : theme;
       state.themeFilter.clear();
+      state.subFilter.clear();
       if (state.activeThemeBar) state.themeFilter.add(state.activeThemeBar);
       state.page = 1;
       renderThemeChart();
+      renderSubTopics();
       renderFilterChips();
       renderAuditTable();
       document.getElementById("audit-body").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -522,6 +487,55 @@ function showBarTooltip(e) {
 }
 function hideBarTooltip() {
   if (tooltipEl) tooltipEl.classList.remove("visible");
+}
+
+/* =========================================================================
+   RENDER: Enrollment sub-topics
+   ========================================================================= */
+function renderSubTopics() {
+  const key = state.selectedMonth;
+  const monthRows = state.records.filter(r => !key || r.monthKey === key);
+  const enr = monthRows.filter(r => r.theme === ENROLLMENT);
+  const card = document.getElementById("sub-card");
+  const label = key ? monthLabelOf(key) : "all time";
+  card.hidden = enr.length === 0;
+  if (!enr.length) return;
+  document.getElementById("sub-title").textContent = `Inside Enrollment & Enlistment in ${label}`;
+  document.getElementById("sub-hint").textContent =
+    `${fmtNum(enr.length)} queries, ${pct(enr.length, monthRows.length)}% of the month. Click a sub-topic to filter the audit log below.`;
+  const counts = countBy(enr, "subTheme");
+  const order = [...SUB_DEFS.map(s => s.name), OTHER_SUB];
+  const entries = order.filter(n => counts.get(n)).map(n => [n, counts.get(n)]).sort((a, b) => b[1] - a[1]);
+  const max = entries.length ? entries[0][1] : 1;
+  const chart = document.getElementById("sub-chart");
+  chart.innerHTML = entries.map(([name, count]) => {
+    const active = state.subFilter.has(name);
+    const dimmed = state.subFilter.size && !active ? "dimmed" : "";
+    const color = name === OTHER_SUB ? "var(--series-other)" : themeColor(ENROLLMENT);
+    return `
+      <div class="chart-row ${active ? "active" : ""}">
+        <span class="bar-label" title="${escapeAttr(name)}">${escapeHTML(name)}</span>
+        <span class="bar-track">
+          <span class="bar-fill ${dimmed}" data-sub-bar="${escapeAttr(name)}" style="width:${Math.max((count / max) * 100, 2)}%; background:${color}"
+                data-tooltip="${escapeAttr(name)}: ${count} (${pct(count, enr.length)}% of Enrollment)"></span>
+        </span>
+        <span class="bar-value">${count}</span>
+      </div>`;
+  }).join("");
+  chart.querySelectorAll(".bar-fill").forEach(bar => {
+    bar.addEventListener("mouseenter", showBarTooltip);
+    bar.addEventListener("mousemove", showBarTooltip);
+    bar.addEventListener("mouseleave", hideBarTooltip);
+    bar.addEventListener("click", () => {
+      const n = bar.dataset.subBar;
+      state.subFilter.has(n) ? state.subFilter.delete(n) : state.subFilter.add(n);
+      state.themeFilter.clear(); state.themeFilter.add(ENROLLMENT);
+      state.activeThemeBar = ENROLLMENT;
+      state.page = 1;
+      renderSubTopics(); renderThemeChart(); renderFilterChips(); renderAuditTable();
+      document.getElementById("audit-body").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 }
 
 /* =========================================================================
@@ -564,6 +578,23 @@ function renderFilterChips() {
     });
   });
 
+  const subCounts = countBy(monthRows.filter(r => r.subTheme), "subTheme");
+  const subWrap = document.getElementById("sub-chips");
+  document.getElementById("sub-group").hidden = subCounts.size === 0;
+  subWrap.innerHTML = [...SUB_DEFS.map(x => x.name), OTHER_SUB].filter(n => subCounts.get(n)).map(n => {
+    const selected = state.subFilter.has(n);
+    return `<button type="button" class="chip ${selected ? "selected" : ""}" data-sub="${escapeAttr(n)}">${escapeHTML(n)} <span class="count">${subCounts.get(n)}</span></button>`;
+  }).join("");
+  subWrap.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const n = chip.dataset.sub;
+      state.subFilter.has(n) ? state.subFilter.delete(n) : state.subFilter.add(n);
+      if (state.subFilter.size) { state.themeFilter.clear(); state.themeFilter.add(ENROLLMENT); state.activeThemeBar = ENROLLMENT; }
+      state.page = 1;
+      renderSubTopics(); renderThemeChart(); renderFilterChips(); renderAuditTable();
+    });
+  });
+
   const themeCounts = countBy(monthRows, "theme");
   const allThemeNames = [...THEME_DEFS.map(t => t.name), OTHER_THEME.name];
   const themeWrap = document.getElementById("theme-chips");
@@ -578,6 +609,7 @@ function renderFilterChips() {
     chip.addEventListener("click", () => {
       const t = chip.dataset.theme;
       state.themeFilter.has(t) ? state.themeFilter.delete(t) : state.themeFilter.add(t);
+      if (!state.themeFilter.has(ENROLLMENT)) state.subFilter.clear();
       state.activeThemeBar = state.themeFilter.size === 1 ? [...state.themeFilter][0] : null;
       state.page = 1;
       renderFilterChips();
@@ -594,6 +626,7 @@ function getFilteredRows() {
   let rows = state.records.filter(r => !state.selectedMonth || r.monthKey === state.selectedMonth);
   if (state.statusFilter.size) rows = rows.filter(r => state.statusFilter.has(r.status));
   if (state.themeFilter.size) rows = rows.filter(r => state.themeFilter.has(r.theme));
+  if (state.subFilter.size) rows = rows.filter(r => state.subFilter.has(r.subTheme));
   if (state.flagFilter) rows = rows.filter(r => r.flags.includes(state.flagFilter));
   if (state.searchText) {
     const q = state.searchText.toLowerCase();
@@ -647,7 +680,7 @@ function renderAuditTable() {
       return `
       <tr>
         <td>${escapeHTML(r.queueNumber)}</td>
-        <td><span class="theme-tag"><span class="dot" style="background:${themeColor(r.theme)}"></span>${escapeHTML(r.theme)}</span></td>
+        <td><span class="theme-tag"><span class="dot" style="background:${themeColor(r.theme)}"></span>${escapeHTML(r.theme)}</span>${r.subTheme ? `<div class="sub-tag">${escapeHTML(r.subTheme)}</div>` : ""}</td>
         <td class="desc-cell"><div class="clamp">${escapeHTML(r.description) || "—"}</div>${r.description.length > 140 ? '<button class="expand-btn" data-expand>Show more</button>' : ""}</td>
         <td><span class="status-tag ${meta.cssClass}">${r.status}</span></td>
         <td class="resolution-cell"><div class="clamp">${escapeHTML(r.resolution) || "—"}</div>${r.resolution.length > 140 ? '<button class="expand-btn" data-expand>Show more</button>' : ""}</td>
@@ -731,7 +764,7 @@ function renderDestinationTable() {
    ========================================================================= */
 function exportFilteredCSV() {
   const rows = getFilteredRows();
-  const headers = ["Queue Number", "Identified Theme", "Description", "Concern Status", "Resolution", "Referred To", "Follow-up Flags"];
+  const headers = ["Queue Number", "Identified Theme", "Enrollment Sub-topic", "Description", "Concern Status", "Resolution", "Referred To", "Follow-up Flags"];
   // a leading = + - @ would be run as a formula when the file is opened in a spreadsheet
   const csvEscape = v => {
     let t = (v || "").toString();
@@ -739,7 +772,7 @@ function exportFilteredCSV() {
     return `"${t.replace(/"/g, '""')}"`;
   };
   const lines = [headers.join(",")].concat(
-    rows.map(r => [r.queueNumber, r.theme, r.description, r.status, r.resolution, r.destination, r.flags.map(id => FLAGS.find(f => f.id === id).label).join("; ")].map(csvEscape).join(","))
+    rows.map(r => [r.queueNumber, r.theme, r.subTheme, r.description, r.status, r.resolution, r.destination, r.flags.map(id => FLAGS.find(f => f.id === id).label).join("; ")].map(csvEscape).join(","))
   );
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
@@ -761,6 +794,7 @@ function renderAll() {
   renderTrend();
   renderFollowUp();
   renderThemeChart();
+  renderSubTopics();
   renderFilterChips();
   renderAuditTable();
   renderDestinationTable();
@@ -775,11 +809,13 @@ function wireEvents() {
     state.page = 1;
     state.activeThemeBar = null;
     state.themeFilter.clear();
+    state.subFilter.clear();
     state.flagFilter = null;
     renderMonthStats();
     renderTrend();
     renderFollowUp();
     renderThemeChart();
+    renderSubTopics();
     renderFilterChips();
     renderAuditTable();
     renderDestinationTable();
@@ -794,6 +830,7 @@ function wireEvents() {
   document.getElementById("clear-filters-btn").addEventListener("click", () => {
     state.statusFilter.clear();
     state.themeFilter.clear();
+    state.subFilter.clear();
     state.flagFilter = null;
     state.activeThemeBar = null;
     state.searchText = "";

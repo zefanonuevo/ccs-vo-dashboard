@@ -35,10 +35,12 @@ no build step, no API key.
   fetch their own published CSV from the `CSV_URL` constant at the top of the
   file on load (and every 60s after), parse it, and render. `assets/app.js`
   and `assets/knowledge-base.js` both classify each operations entry into a
-  theme (Enrollment & Enlistment, Practicum & Internship, Thesis & Capstone,
+  topic (Enrollment & Enlistment, Practicum & Internship, Thesis & Capstone,
   etc.) by matching keywords in the "Brief Description of Concern or Inquiry"
-  column, since that sheet has no theme column of its own — the two files
-  duplicate the same `THEME_DEFS` classifier rather than sharing a module.
+  column, since that sheet has no topic column of its own. Enrollment &
+  Enlistment is split into sub-topics the same way. The rules live in one
+  shared file, `assets/classify.js`, used by both pages; the first matching
+  rule wins, so the order of the rules matters.
 - The month shown throughout both dashboards is derived from the date embedded
   in each response's queue number (format `YYYYMMDD-N`).
 - Everything else (filters, search, sorting, pagination, CSV export, comment
@@ -78,6 +80,7 @@ version is also shown in the footer of every page.
 | `v2.0.0` | macOS-style redesign on the shared `ccs-design` tokens |
 | `v2.0.1` | Mobile fixes |
 | `v2.1.0` | Analyst review: data checks, follow-up flags, trend chart, evaluation coverage |
+| `v2.2.0` | Enrollment split into sub-topics, one shared classifier |
 
 **Look at an old version.** Open `https://github.com/zefanonuevo/ccs-vo-dashboard/tree/v1.0.0`
 (swap in any tag), or download its zip from the Releases page.

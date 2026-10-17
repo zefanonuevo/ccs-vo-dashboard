@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   // single source of truth for the version shown in every page footer; keep in step with CHANGELOG.md
-  var VERSION = "2.1.0";
+  var VERSION = "2.2.0";
   var KEY = "ccs-theme", LEGACY = "ccs-vo-theme", root = document.documentElement;
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }

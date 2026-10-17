@@ -104,6 +104,10 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
         <span class="filter-label">Filter by Topic:</span>
         <div class="chip-row" id="kb-theme-chips"></div>
       </div>
+      <div class="filter-group" id="kb-sub-group" hidden>
+        <span class="filter-label">Enrollment Sub-topic:</span>
+        <div class="chip-row" id="kb-sub-chips"></div>
+      </div>
     </div>
     <p class="table-count" id="kb-count"></p>
     <div id="kb-results" class="kb-card-list"></div>
@@ -117,6 +121,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/shell.js?v=1"></script>
-<script src="assets/knowledge-base.js?v=3"></script>
+<script src="assets/classify.js?v=1"></script>
+<script src="assets/knowledge-base.js?v=4"></script>
 </body>
 </html>

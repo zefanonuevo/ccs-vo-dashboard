@@ -137,6 +137,12 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
       <div id="theme-chart" class="theme-chart"></div>
     </section>
 
+    <section class="card" id="sub-card" hidden>
+      <h2 class="card-title"><svg class="icon-inline" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16v2H4V6Zm3 5h13v2H7v-2Zm3 5h10v2H10v-2Z" fill="currentColor"/></svg><span id="sub-title">Inside Enrollment &amp; Enlistment</span></h2>
+      <p class="card-hint" id="sub-hint"></p>
+      <div id="sub-chart" class="theme-chart"></div>
+    </section>
+
     <section class="card">
       <button class="collapse-toggle" id="audit-toggle" type="button" aria-expanded="true">
         <span class="chevron">▾</span>
@@ -155,6 +161,10 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
               <span class="filter-label">Filter by Identified Topic Theme:</span>
               <div class="chip-row" id="theme-chips"></div>
             </div>
+          </div>
+          <div class="filter-group" id="sub-group" hidden>
+            <span class="filter-label">Filter by Enrollment Sub-topic:</span>
+            <div class="chip-row" id="sub-chips"></div>
           </div>
           <div class="filter-group">
             <span class="filter-label">Filter by Follow-up Flag:</span>
@@ -200,6 +210,7 @@ if (!localStorage.getItem("ccs-vo-auth-user")) { location.replace("index.html");
 <div class="toast" id="toast" hidden></div>
 
 <script src="assets/shell.js?v=1"></script>
-<script src="assets/app.js?v=15"></script>
+<script src="assets/classify.js?v=1"></script>
+<script src="assets/app.js?v=16"></script>
 </body>
 </html>

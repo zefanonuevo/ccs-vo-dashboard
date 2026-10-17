@@ -6,6 +6,29 @@ See [Versions and restoring](README.md#versions-and-restoring) in the README.
 The version shown in the footer of every page comes from `assets/shell.js`
 (`VERSION`). Change it together with this file when you cut a new version.
 
+## 2.2.0 — Enrollment sub-topics
+
+Enrollment & Enlistment is about two thirds of all queries (1,313 of 2,037), so one
+bar hid most of what clients ask about. It is now split into sub-topics, worked out
+from the wording of the real queries.
+
+### Added
+- **Inside Enrollment & Enlistment** card on the Operations Dashboard: the
+  sub-topics for the selected month, with a click-to-filter drill-down.
+- **Enrollment Sub-topic** filter in the audit log, a sub-topic line under the
+  topic in the table, and an *Enrollment Sub-topic* column in the CSV export.
+- Knowledge Base: a sub-topic tag on each precedent, and a sub-topic filter that
+  appears when the Enrollment topic is selected.
+- The eight sub-topics: Enlistment Errors & Final Submit, Add / Drop & Changes,
+  Manual Enlistment, Special Classes, Petitions & Residency, Class Availability &
+  Sections, Enrollment Status & Late Enrollment, Electives & Course Selection, and
+  Other Enlistment Questions (about 14% of Enrollment).
+
+### Changed
+- The topic classifier now lives in one file, `assets/classify.js`, used by both
+  the Dashboard and the Knowledge Base. They had separate identical copies.
+- The Knowledge Base no longer shows "Routed to: DONE"; DONE is not an office.
+
 ## 2.1.0 — Analyst review
 
 A review of the dashboard's data and charts against the live sheets. Numbers were
